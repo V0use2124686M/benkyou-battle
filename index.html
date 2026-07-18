@@ -21,11 +21,13 @@
   #app {
     width: 100%;
     max-width: 480px;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh; /* スマホのアドレスバーぶんを除いた高さに収める */
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 8px 12px;
     position: relative;
+    overflow: hidden;
   }
 
   /* ===== タイトルがめん ===== */
@@ -71,15 +73,28 @@
   .bestScore { font-size: 14px; color: #ffe082; margin-top: 4px; }
 
   /* ===== ゲームがめん ===== */
-  #gameScreen { flex: 1; display: none; flex-direction: column; gap: 8px; }
+  #gameScreen { flex: 1; display: none; flex-direction: column; gap: 6px; min-height: 0; }
 
   #topBar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
+    gap: 6px;
   }
+  #btnQuit {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255,255,255,.15);
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  #btnQuit:active { transform: translateY(2px); }
   #comboLabel { color: #ffd54f; min-height: 22px; }
   #comboLabel.hot { animation: comboPop .3s; }
   @keyframes comboPop {
@@ -91,21 +106,21 @@
   #monsterArea {
     background: rgba(0,0,0,.25);
     border-radius: 18px;
-    padding: 10px;
+    padding: 6px 10px;
     text-align: center;
     position: relative;
     overflow: hidden;
   }
-  #monsterName { font-size: 18px; font-weight: bold; }
+  #monsterName { font-size: 16px; font-weight: bold; }
   #monsterBox {
-    height: 110px;
+    height: 88px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
   }
-  #monsterImg { max-height: 105px; max-width: 160px; display: none; }
-  #monsterEmoji { font-size: 78px; line-height: 1; }
+  #monsterImg { max-height: 84px; max-width: 140px; display: none; }
+  #monsterEmoji { font-size: 60px; line-height: 1; }
   #monsterBox.shake { animation: shake .4s; }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -134,7 +149,7 @@
     background: rgba(0,0,0,.5);
     border: 2px solid #fff;
     border-radius: 10px;
-    height: 18px;
+    height: 14px;
     overflow: hidden;
     margin-top: 4px;
   }
@@ -170,9 +185,9 @@
     gap: 8px;
     background: rgba(0,0,0,.25);
     border-radius: 14px;
-    padding: 8px 12px;
+    padding: 5px 12px;
   }
-  #playerFace { font-size: 34px; }
+  #playerFace { font-size: 28px; }
   #playerArea.hurt { animation: hurtFlash .5s; }
   @keyframes hurtFlash {
     0%, 100% { background: rgba(0,0,0,.25); }
@@ -187,24 +202,24 @@
     background: #fffde7;
     color: #333;
     border-radius: 18px;
-    padding: 12px;
+    padding: 8px;
     text-align: center;
-    min-height: 96px;
+    min-height: 78px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     box-shadow: 0 4px 0 rgba(0,0,0,.3);
   }
-  #questionLabel { font-size: 15px; color: #7b5e00; font-weight: bold; }
-  #questionMain { font-size: 44px; font-weight: bold; line-height: 1.2; }
-  #questionMain.kanjiBig { font-size: 64px; }
+  #questionLabel { font-size: 14px; color: #7b5e00; font-weight: bold; }
+  #questionMain { font-size: 38px; font-weight: bold; line-height: 1.2; }
+  #questionMain.kanjiBig { font-size: 52px; }
 
   /* メッセージ */
   #message {
     text-align: center;
-    font-size: 19px;
+    font-size: 17px;
     font-weight: bold;
-    min-height: 28px;
+    min-height: 24px;
     text-shadow: 2px 2px 0 rgba(0,0,0,.5);
   }
   #message.good { color: #ffee58; animation: comboPop .3s; }
@@ -214,13 +229,13 @@
   #choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     margin-top: auto;
-    padding-bottom: 6px;
+    padding-bottom: 2px;
   }
   .choiceBtn {
-    padding: 18px 6px;
-    font-size: 26px;
+    padding: 12px 6px;
+    font-size: 24px;
     font-weight: bold;
     font-family: inherit;
     border: 4px solid #fff;
@@ -230,7 +245,7 @@
     cursor: pointer;
     box-shadow: 0 5px 0 rgba(0,0,0,.35);
     transition: transform .1s;
-    min-height: 66px;
+    min-height: 56px;
   }
   .choiceBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
   .choiceBtn:disabled { opacity: .85; }
@@ -273,12 +288,12 @@
   #btnRetry { background: linear-gradient(180deg, #ff8a5c, #f4511e); }
   #btnToTitle { background: linear-gradient(180deg, #5cc9ff, #1e88e5); }
 
-  /* かちどき */
+  /* かちどき (たおしたあとの モンスターエリアに かさねて だす) */
   #winBanner {
     position: absolute;
-    left: 0; right: 0; top: 30%;
+    left: 0; right: 0; top: 32px;
     text-align: center;
-    font-size: 30px;
+    font-size: 24px;
     font-weight: bold;
     color: #ffee58;
     text-shadow: 3px 3px 0 #e65100;
@@ -308,6 +323,7 @@
       <span id="scoreLabel">スコア 0</span>
       <span id="comboLabel"></span>
       <span id="levelLabel">レベル 1</span>
+      <button id="btnQuit">やめる</button>
     </div>
 
     <div id="monsterArea">
@@ -317,6 +333,7 @@
         <div id="monsterEmoji">👾</div>
       </div>
       <div class="hpBarOuter"><div class="hpBarInner" id="monsterHpBar"></div></div>
+      <div id="winBanner"></div>
     </div>
 
     <div id="playerArea">
@@ -340,14 +357,12 @@
       <button class="choiceBtn"></button>
       <button class="choiceBtn"></button>
     </div>
-
-    <div id="winBanner"></div>
   </div>
 
-  <!-- ゲームオーバー -->
+  <!-- けっか (ゲームオーバー / とちゅうしゅうりょう) -->
   <div id="overlay">
-    <div class="bigFace">😵</div>
-    <h2>ゲームオーバー</h2>
+    <div class="bigFace" id="overlayFace">😵</div>
+    <h2 id="overlayTitle">ゲームオーバー</h2>
     <div class="resultLine">スコア <b id="finalScore">0</b></div>
     <div class="resultLine">たおした かず <b id="finalKills">0</b></div>
     <div class="resultLine">さいこうコンボ <b id="finalCombo">0</b></div>
@@ -544,7 +559,12 @@ var MODES = {
 };
 var state = {};
 var kanjiDeck = [];
+var kanjiDeckHard = false;
 var busy = false;
+
+/* レベル7 (monsterIndex 6) からは むずかしいもんだい */
+var KANJI_HARD_START = 72; // 「岸」いこうが 小3ちゅうしん
+function isHardLevel() { return state.monsterIndex >= 6; }
 
 var $ = function(id) { return document.getElementById(id); };
 var choiceBtns = Array.prototype.slice.call(document.querySelectorAll(".choiceBtn"));
@@ -582,6 +602,7 @@ function startGame(mode) {
   SFX.tap();
   state = {
     mode: mode,
+    ended: false,
     score: 0,
     combo: 0,
     maxCombo: 0,
@@ -673,9 +694,11 @@ function makeQuestion() {
 }
 
 function makeMulQuestion() {
+  // レベル7からは 4のだん〜9のだんだけ (むずかしいもんだい)
+  var lo = isHardLevel() ? 4 : 1;
   var a, b, key;
   do {
-    a = 1 + rand(9); b = 1 + rand(9);
+    a = lo + rand(10 - lo); b = lo + rand(10 - lo);
     key = a + "x" + b;
   } while (key === state.lastQuestionKey);
   state.lastQuestionKey = key;
@@ -694,9 +717,11 @@ function makeMulQuestion() {
 }
 
 function makeDivQuestion() {
+  // レベル7からは わる数も こたえも 4いじょう (かんたんな もんだいを なくす)
+  var lo = isHardLevel() ? 4 : 1;
   var a, b, key;
   do {
-    a = 1 + rand(9); b = 1 + rand(9);
+    a = lo + rand(10 - lo); b = lo + rand(10 - lo);
     key = (a * b) + "/" + a;
   } while (key === state.lastQuestionKey);
   state.lastQuestionKey = key;
@@ -730,8 +755,11 @@ function collectWrongNumbers(ans, candidates) {
 }
 
 function makeKanjiQuestion() {
-  if (kanjiDeck.length === 0) {
-    kanjiDeck = shuffle(KANJI_DATA.slice());
+  // レベル7からは こうはん (小3ちゅうしんの かんじ) から しゅつだい
+  var hard = isHardLevel();
+  if (kanjiDeck.length === 0 || kanjiDeckHard !== hard) {
+    kanjiDeck = shuffle(hard ? KANJI_DATA.slice(KANJI_HARD_START) : KANJI_DATA.slice(0, KANJI_HARD_START));
+    kanjiDeckHard = hard;
   }
   var item = kanjiDeck.pop();
   return {
@@ -811,7 +839,7 @@ function onCorrect() {
   if (state.monsterHp <= 0) {
     defeatMonster();
   } else {
-    setTimeout(nextQuestion, 900);
+    setTimeout(function() { if (!state.ended) nextQuestion(); }, 900);
   }
 }
 
@@ -826,6 +854,7 @@ function onWrong() {
 
   // モンスターの こうげき
   setTimeout(function() {
+    if (state.ended) return;
     SFX.hurt();
     var box = $("monsterBox");
     box.classList.remove("shake", "appear", "attack");
@@ -840,9 +869,9 @@ function onWrong() {
     updatePlayerHp();
 
     if (state.playerHp <= 0) {
-      setTimeout(gameOver, 700);
+      setTimeout(function() { if (!state.ended) gameOver(); }, 700);
     } else {
-      setTimeout(nextQuestion, 1400);
+      setTimeout(function() { if (!state.ended) nextQuestion(); }, 1400);
     }
   }, 700);
 }
@@ -864,12 +893,13 @@ function defeatMonster() {
   updatePlayerHp();
 
   var banner = $("winBanner");
-  banner.innerHTML = "モンスターを たおした!<br><span style='font-size:20px'>ボーナス +" + bonus + " / HP +" + heal + " かいふく</span>";
+  banner.innerHTML = "モンスターを たおした!<br><span style='font-size:15px'>ボーナス +" + bonus + " / HP +" + heal + " かいふく</span>";
   banner.style.display = "block";
   updateHud();
 
   setTimeout(function() {
     banner.style.display = "none";
+    if (state.ended) return;
     state.monsterIndex++;
     spawnMonster();
     nextQuestion();
@@ -878,6 +908,23 @@ function defeatMonster() {
 
 function gameOver() {
   SFX.lose();
+  showResult(false);
+}
+
+function quitGame() {
+  ensureAudio();
+  SFX.tap();
+  showResult(true);
+}
+
+function showResult(quit) {
+  state.ended = true;
+  $("overlayFace").textContent = quit ? "😊" : "😵";
+  var h = $("overlayTitle");
+  h.textContent = quit ? "おつかれさま!" : "ゲームオーバー";
+  h.style.color = quit ? "#ffd54f" : "#ff8a80";
+  $("btnRetry").style.display = quit ? "none" : "block";
+
   $("finalScore").textContent = state.score;
   $("finalKills").textContent = state.kills;
   $("finalCombo").textContent = state.maxCombo;
@@ -897,6 +944,7 @@ $("btnKanji").addEventListener("click", function() { startGame("kanji"); });
 choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
+$("btnQuit").addEventListener("click", function() { quitGame(); });
 $("btnRetry").addEventListener("click", function() { startGame(state.mode); });
 $("btnToTitle").addEventListener("click", function() { ensureAudio(); SFX.tap(); showTitle(); });
 
