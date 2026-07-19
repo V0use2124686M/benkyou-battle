@@ -613,6 +613,9 @@ var kanjiDeck = [];
 var kanjiDeckTier = -1;
 var busy = false;
 
+/* レベル15の モンスターを たおしたら ゲームクリア */
+var CLEAR_LEVEL = 15;
+
 /* むずかしさ: 0 = レベル1〜6, 1 = レベル7〜8, 2 = レベル9〜 (さいこう難度) */
 var KANJI_HARD_START = 72;  // 「岸」いこうが 小3ちゅうしん
 var KANJI_G4_START = 123;   // 「愛」いこうが 小4
@@ -1017,6 +1020,10 @@ function defeatMonster() {
   setTimeout(function() {
     banner.style.display = "none";
     if (state.ended) return;
+    if (state.monsterIndex + 1 >= CLEAR_LEVEL) {
+      gameClear();
+      return;
+    }
     state.monsterIndex++;
     spawnMonster();
     nextQuestion();
@@ -1025,22 +1032,27 @@ function defeatMonster() {
 
 function gameOver() {
   SFX.lose();
-  showResult(false);
+  showResult("over");
 }
 
 function quitGame() {
   ensureAudio();
   SFX.tap();
-  showResult(true);
+  showResult("quit");
 }
 
-function showResult(quit) {
+function gameClear() {
+  SFX.win();
+  showResult("clear");
+}
+
+function showResult(kind) {
   state.ended = true;
-  $("overlayFace").textContent = quit ? "😊" : "😵";
+  $("overlayFace").textContent = kind === "clear" ? "🏆" : (kind === "quit" ? "😊" : "😵");
   var h = $("overlayTitle");
-  h.textContent = quit ? "おつかれさま!" : "ゲームオーバー";
-  h.style.color = quit ? "#ffd54f" : "#ff8a80";
-  $("btnRetry").style.display = quit ? "none" : "block";
+  h.textContent = kind === "clear" ? "🎉 ゲームクリア! 🎉" : (kind === "quit" ? "おつかれさま!" : "ゲームオーバー");
+  h.style.color = kind === "over" ? "#ff8a80" : "#ffd54f";
+  $("btnRetry").style.display = kind === "quit" ? "none" : "block";
 
   $("finalScore").textContent = state.score;
   $("finalKills").textContent = state.kills;
