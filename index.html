@@ -916,11 +916,12 @@ function collectWrongNumbers(ans, candidates) {
 }
 
 function makeKanjiQuestion() {
-  // レベルが あがると 小2 → 小3 → 小4 の かんじに かわる
+  // レベルが あがると 小2 → 小3 → 小3+小4 の かんじに かわる
+  // (さいこう難度は 小3と小4を まぜて プールを ひろくする)
   var d = difficulty();
   if (kanjiDeck.length === 0 || kanjiDeckTier !== d) {
     kanjiDeck = shuffle(
-      d === 2 ? KANJI_DATA.slice(KANJI_G4_START) :
+      d === 2 ? KANJI_DATA.slice(KANJI_HARD_START) :
       d === 1 ? KANJI_DATA.slice(KANJI_HARD_START, KANJI_G4_START) :
                 KANJI_DATA.slice(0, KANJI_HARD_START));
     kanjiDeckTier = d;
