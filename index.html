@@ -71,6 +71,20 @@
   #btnKanji { background: linear-gradient(180deg, #7ee081, #2e9e46); }
   .modeBtn small { display: block; font-size: 14px; font-weight: normal; margin-top: 4px; opacity: .95; }
   .bestScore { font-size: 14px; color: #ffe082; margin-top: 4px; }
+  #btnResetScore {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255,255,255,.15);
+    border: 2px solid rgba(255,255,255,.6);
+    border-radius: 10px;
+    padding: 6px 14px;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  #btnResetScore:active { transform: translateY(2px); }
+  #btnResetScore.arm { background: #d32f2f; border-color: #fff; animation: comboPop .3s; }
 
   /* ===== ゲームがめん ===== */
   #gameScreen { flex: 1; display: none; flex-direction: column; gap: 6px; min-height: 0; }
@@ -316,6 +330,7 @@
     <button class="modeBtn" id="btnMul">✖ かけ算モード<small>九九で たたかう!</small><span class="bestScore" id="bestMul"></span></button>
     <button class="modeBtn" id="btnDiv">➗ わり算モード<small>わり算で たたかう!</small><span class="bestScore" id="bestDiv"></span></button>
     <button class="modeBtn" id="btnKanji">📖 かんじモード<small>かんじの よみかたで たたかう!</small><span class="bestScore" id="bestKanji"></span></button>
+    <button id="btnResetScore">🗑 スコアを リセット</button>
   </div>
 
   <!-- バトル -->
@@ -654,6 +669,36 @@ function showTitle() {
   b = getBest("mul");   $("bestMul").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("div");   $("bestDiv").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("kanji"); $("bestKanji").textContent = b ? "さいこう " + b + " てん" : "";
+  // スコアが なにも ないときは リセットボタンを かくす
+  disarmResetBtn();
+  $("btnResetScore").style.display =
+    (getBest("mul") || getBest("div") || getBest("kanji")) ? "block" : "none";
+}
+
+/* スコアリセット (まちがえて おさないように 2かい おして かくてい) */
+var resetArmTimer = null;
+function disarmResetBtn() {
+  clearTimeout(resetArmTimer);
+  var btn = $("btnResetScore");
+  btn.classList.remove("arm");
+  btn.textContent = "🗑 スコアを リセット";
+}
+function onResetScore() {
+  ensureAudio();
+  SFX.tap();
+  var btn = $("btnResetScore");
+  if (!btn.classList.contains("arm")) {
+    btn.classList.add("arm");
+    btn.textContent = "ほんとうに リセットする?";
+    resetArmTimer = setTimeout(disarmResetBtn, 3000);
+    return;
+  }
+  try {
+    localStorage.removeItem(MODES.mul.storageKey);
+    localStorage.removeItem(MODES.div.storageKey);
+    localStorage.removeItem(MODES.kanji.storageKey);
+  } catch (e) {}
+  showTitle();
 }
 
 function startGame(mode) {
@@ -1074,6 +1119,7 @@ choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
 $("btnQuit").addEventListener("click", function() { quitGame(); });
+$("btnResetScore").addEventListener("click", onResetScore);
 $("btnRetry").addEventListener("click", function() { startGame(state.mode); });
 $("btnToTitle").addEventListener("click", function() { ensureAudio(); SFX.tap(); showTitle(); });
 
