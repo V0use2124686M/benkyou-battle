@@ -213,6 +213,7 @@
   #questionLabel { font-size: 14px; color: #7b5e00; font-weight: bold; }
   #questionMain { font-size: 38px; font-weight: bold; line-height: 1.2; }
   #questionMain.kanjiBig { font-size: 52px; }
+  #questionMain.textQ { font-size: 16px; line-height: 1.45; text-align: left; padding: 2px 4px; }
 
   /* メッセージ */
   #message {
@@ -376,7 +377,7 @@
 <script>
 "use strict";
 
-/* ==================== かんじデータ (小2・小3) ====================
+/* ==================== かんじデータ (小2・小3・小4) ====================
    [かんじ, せいかい, [まちがい1, まちがい2, まちがい3]] */
 var KANJI_DATA = [
   ["星","ほし",["つき","そら","くも"]],
@@ -501,7 +502,57 @@ var KANJI_DATA = [
   ["君","きみ",["ぼく","わたし","かれ"]],
   ["都","みやこ",["まち","むら","くに"]],
   ["旅","たび",["みち","ふね","やど"]],
-  ["宿","やど",["いえ","みせ","てら"]]
+  ["宿","やど",["いえ","みせ","てら"]],
+  /* ---- ここから 小4 (KANJI_G4_START) ---- */
+  ["愛","あい",["こい","ゆめ","なさけ"]],
+  ["塩","しお",["さとう","こしょう","す"]],
+  ["億","おく",["まん","ちょう","けた"]],
+  ["芽","め",["ね","たね","えだ"]],
+  ["街","まち",["みち","むら","みせ"]],
+  ["鏡","かがみ",["まど","めがね","かべ"]],
+  ["旗","はた",["ぼう","まく","かんばん"]],
+  ["器","うつわ",["さら","はこ","なべ"]],
+  ["型","かた",["わく","いた","すじ"]],
+  ["菜","な",["くさ","はな","いも"]],
+  ["札","ふだ",["きって","きっぷ","はり"]],
+  ["種","たね",["め","ね","つぶ"]],
+  ["巣","す",["あな","かご","はこ"]],
+  ["孫","まご",["おい","めい","いとこ"]],
+  ["帯","おび",["ひも","ぬの","たすき"]],
+  ["仲","なか",["とも","あいだ","きずな"]],
+  ["底","そこ",["おく","うら","ふち"]],
+  ["灯","ひ",["かげ","ほのお","けむり"]],
+  ["梅","うめ",["もも","さくら","まつ"]],
+  ["飯","めし",["こめ","もち","かゆ"]],
+  ["粉","こな",["つぶ","すな","しる"]],
+  ["兵","へい",["ぶし","さむらい","との"]],
+  ["末","すえ",["はじめ","なかば","もと"]],
+  ["民","たみ",["ひと","くに","おう"]],
+  ["輪","わ",["まる","たま","くさり"]],
+  ["倉","くら",["こや","いえ","たな"]],
+  ["束","たば",["ふくろ","くみ","かたまり"]],
+  ["松","まつ",["うめ","たけ","すぎ"]],
+  ["熱","ねつ",["さむけ","かぜ","あせ"]],
+  ["毒","どく",["くすり","きず","とげ"]],
+  ["陸","りく",["うみ","そら","しま"]],
+  ["軍","ぐん",["へい","しろ","たたかい"]],
+  ["夫","おっと",["つま","むこ","おや"]],
+  ["的","まと",["や","ゆみ","しるし"]],
+  ["節","ふし",["えだ","くき","みき"]],
+  ["席","せき",["いす","つくえ","ゆか"]],
+  ["管","くだ",["つつ","ぼう","ふえ"]],
+  ["泣く","なく",["わらう","さけぶ","なげく"]],
+  ["笑う","わらう",["なく","おこる","さわぐ"]],
+  ["働く","はたらく",["うごく","つとめる","あるく"]],
+  ["折る","おる",["きる","わる","まげる"]],
+  ["選ぶ","えらぶ",["ならぶ","はこぶ","むすぶ"]],
+  ["戦う","たたかう",["きそう","あらそう","むかう"]],
+  ["飛ぶ","とぶ",["はねる","まう","かける"]],
+  ["祝う","いわう",["ねがう","うたう","おがむ"]],
+  ["願う","ねがう",["いわう","いのる","おもう"]],
+  ["続く","つづく",["とどく","うごく","ひびく"]],
+  ["残る","のこる",["とまる","もどる","こまる"]],
+  ["借りる","かりる",["おりる","たりる","こりる"]]
 ];
 
 /* ==================== モンスター ==================== */
@@ -559,12 +610,17 @@ var MODES = {
 };
 var state = {};
 var kanjiDeck = [];
-var kanjiDeckHard = false;
+var kanjiDeckTier = -1;
 var busy = false;
 
-/* レベル7 (monsterIndex 6) からは むずかしいもんだい */
-var KANJI_HARD_START = 72; // 「岸」いこうが 小3ちゅうしん
-function isHardLevel() { return state.monsterIndex >= 6; }
+/* むずかしさ: 0 = レベル1〜6, 1 = レベル7〜8, 2 = レベル9〜 (さいこう難度) */
+var KANJI_HARD_START = 72;  // 「岸」いこうが 小3ちゅうしん
+var KANJI_G4_START = 123;   // 「愛」いこうが 小4
+function difficulty() {
+  if (state.monsterIndex >= 8) return 2;
+  if (state.monsterIndex >= 6) return 1;
+  return 0;
+}
 
 var $ = function(id) { return document.getElementById(id); };
 var choiceBtns = Array.prototype.slice.call(document.querySelectorAll(".choiceBtn"));
@@ -613,6 +669,7 @@ function startGame(mode) {
     lastQuestionKey: ""
   };
   kanjiDeck = [];
+  kanjiDeckTier = -1;
   $("titleScreen").style.display = "none";
   $("gameScreen").style.display = "flex";
   $("overlay").style.display = "none";
@@ -694,11 +751,21 @@ function makeQuestion() {
 }
 
 function makeMulQuestion() {
-  // レベル7からは 4のだん〜9のだんだけ (むずかしいもんだい)
-  var lo = isHardLevel() ? 4 : 1;
+  var d = difficulty();
+  // さいこう難度では ときどき 文しょうだい
+  if (d === 2 && Math.random() < 0.35) return makeTextQuestion("mul");
   var a, b, key;
   do {
-    a = lo + rand(10 - lo); b = lo + rand(10 - lo);
+    if (d === 0) {
+      // 九九ぜんぶ
+      a = 1 + rand(9); b = 1 + rand(9);
+    } else if (rand(2) === 0) {
+      // むずかしい九九 (4〜9のだん)
+      a = 4 + rand(6); b = 4 + rand(6);
+    } else {
+      // 2けた × 1けた
+      a = 11 + rand(d === 2 ? 39 : 19); b = 2 + rand(8);
+    }
     key = a + "x" + b;
   } while (key === state.lastQuestionKey);
   state.lastQuestionKey = key;
@@ -717,11 +784,21 @@ function makeMulQuestion() {
 }
 
 function makeDivQuestion() {
-  // レベル7からは わる数も こたえも 4いじょう (かんたんな もんだいを なくす)
-  var lo = isHardLevel() ? 4 : 1;
+  var d = difficulty();
+  // さいこう難度では ときどき 文しょうだい
+  if (d === 2 && Math.random() < 0.35) return makeTextQuestion("div");
   var a, b, key;
   do {
-    a = lo + rand(10 - lo); b = lo + rand(10 - lo);
+    if (d === 0) {
+      a = 1 + rand(9); b = 1 + rand(9);
+    } else if (rand(2) === 0) {
+      // 九九のはんい (わる数も こたえも 4いじょう)
+      a = 4 + rand(6); b = 4 + rand(6);
+    } else {
+      // 2けた ÷ 1けた (こたえも 2けた、わられる数は 99まで)
+      a = 2 + rand(8);
+      b = 10 + rand(Math.floor(99 / a) - 9);
+    }
     key = (a * b) + "/" + a;
   } while (key === state.lastQuestionKey);
   state.lastQuestionKey = key;
@@ -733,6 +810,42 @@ function makeDivQuestion() {
     label: "けいさん しよう!",
     main: (a * b) + " ÷ " + a + " = ?",
     big: false,
+    answer: String(ans),
+    choices: shuffle([String(ans), wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+/* さいこう難度で ランダムに でる 文しょうだい */
+var TEXT_MUL = [
+  function(a, b) { return "1はこに あめが " + a + "こずつ はいっています。" + b + "はこでは ぜんぶで なんこ?"; },
+  function(a, b) { return "1だいに " + a + "にん のれる くるまが " + b + "だい あります。ぜんぶで なんにん のれる?"; },
+  function(a, b) { return "1こ " + a + "えんの ガムを " + b + "こ かいます。ぜんぶで なんえん?"; },
+  function(a, b) { return "1チーム " + a + "にんで " + b + "チーム つくります。みんなで なんにん?"; }
+];
+var TEXT_DIV = [
+  function(a, b) { return (a * b) + "この いちごを " + a + "にんで おなじ かずずつ わけます。1人ぶんは なんこ?"; },
+  function(a, b) { return (a * b) + "ページの ほんを 1日に " + a + "ページずつ よみます。なん日で よみおわる?"; },
+  function(a, b) { return (a * b) + "えん もっています。1こ " + a + "えんの おかしは なんこ かえる?"; },
+  function(a, b) { return (a * b) + "cmの リボンを " + a + "cmずつ きります。なん本に わけられる?"; }
+];
+function makeTextQuestion(kind) {
+  var list = kind === "mul" ? TEXT_MUL : TEXT_DIV;
+  var a, b, t, key;
+  do {
+    a = 2 + rand(8); b = 2 + rand(8);
+    t = rand(list.length);
+    key = kind + "T" + t + ":" + a + "," + b;
+  } while (key === state.lastQuestionKey);
+  state.lastQuestionKey = key;
+  var ans = kind === "mul" ? a * b : b;
+  var wrongs = collectWrongNumbers(ans, kind === "mul"
+    ? [a * (b + 1), a * (b - 1), ans + a, ans - a, ans + 1, ans - 1]
+    : [ans + 1, ans - 1, ans + 2, ans - 2, a, a + b]);
+  return {
+    label: "ぶんしょうだい だ!",
+    main: list[t](a, b),
+    big: false,
+    text: true,
     answer: String(ans),
     choices: shuffle([String(ans), wrongs[0], wrongs[1], wrongs[2]])
   };
@@ -755,11 +868,14 @@ function collectWrongNumbers(ans, candidates) {
 }
 
 function makeKanjiQuestion() {
-  // レベル7からは こうはん (小3ちゅうしんの かんじ) から しゅつだい
-  var hard = isHardLevel();
-  if (kanjiDeck.length === 0 || kanjiDeckHard !== hard) {
-    kanjiDeck = shuffle(hard ? KANJI_DATA.slice(KANJI_HARD_START) : KANJI_DATA.slice(0, KANJI_HARD_START));
-    kanjiDeckHard = hard;
+  // レベルが あがると 小2 → 小3 → 小4 の かんじに かわる
+  var d = difficulty();
+  if (kanjiDeck.length === 0 || kanjiDeckTier !== d) {
+    kanjiDeck = shuffle(
+      d === 2 ? KANJI_DATA.slice(KANJI_G4_START) :
+      d === 1 ? KANJI_DATA.slice(KANJI_HARD_START, KANJI_G4_START) :
+                KANJI_DATA.slice(0, KANJI_HARD_START));
+    kanjiDeckTier = d;
   }
   var item = kanjiDeck.pop();
   return {
@@ -780,6 +896,7 @@ function nextQuestion() {
   var qm = $("questionMain");
   qm.textContent = currentQ.main;
   qm.classList.toggle("kanjiBig", currentQ.big);
+  qm.classList.toggle("textQ", !!currentQ.text);
   $("message").textContent = "";
   $("message").className = "";
   for (var i = 0; i < 4; i++) {
