@@ -625,7 +625,8 @@ var KANJI_G4 = [
   ["観察","かんさつ",["かんそく","けんがく","じっけん"]]
 ];
 
-/* ==================== モンスター ==================== */
+/* ==================== モンスター ====================
+   レベルごとに 1体ずつ (がぞうは monster01.png 〜 monster15.png) */
 var MONSTERS = [
   { emoji: "🟦", name: "スライムン" },
   { emoji: "🍄", name: "キノコッチ" },
@@ -635,7 +636,13 @@ var MONSTERS = [
   { emoji: "🤖", name: "ロボピカ" },
   { emoji: "🗿", name: "イワゴーレム" },
   { emoji: "🐉", name: "ミニドラゴン" },
-  { emoji: "🐲", name: "ゴールドドラゴン" }
+  { emoji: "🦾", name: "メカボーイ" },
+  { emoji: "❄️", name: "ユキヒメ" },
+  { emoji: "🐲", name: "ゴールドドラゴン" },
+  { emoji: "🙏", name: "センジュサマ" },
+  { emoji: "🐉", name: "プラチナドラゴン" },
+  { emoji: "🐋", name: "ヨロイシャチ" },
+  { emoji: "🦖", name: "ガンセキザウルス" }
 ];
 
 /* ==================== おと (Web Audio) ==================== */
@@ -810,15 +817,15 @@ function updateMonsterHp() {
 /* ==================== モンスター ==================== */
 function spawnMonster() {
   var idx = state.monsterIndex;
-  var mon = MONSTERS[idx % MONSTERS.length];
-  var round = Math.floor(idx / MONSTERS.length); // 2しゅうめは もっと つよい
-  state.monsterMaxHp = 30 + idx * 14 + round * 60;
+  var mon = MONSTERS[Math.min(idx, MONSTERS.length - 1)];
+  // レベル10いこうは ボーナスつきで つよくなる (いぜんの ★2 と おなじ バランス)
+  state.monsterMaxHp = 30 + idx * 14 + (idx >= 9 ? 60 : 0);
   state.monsterHp = state.monsterMaxHp;
-  state.monsterAttack = Math.min(35, 9 + idx * 2 + round * 8);
+  state.monsterAttack = Math.min(35, 9 + idx * 2 + (idx >= 9 ? 8 : 0));
 
-  $("monsterName").textContent = mon.name + (round > 0 ? " ★" + (round + 1) : "");
+  $("monsterName").textContent = mon.name;
 
-  // がぞうがあれば つかう (monster1.png など)。なければ えもじ。
+  // がぞうがあれば つかう (monster01.png など)。なければ えもじ。
   var img = $("monsterImg");
   var emo = $("monsterEmoji");
   emo.textContent = mon.emoji;
@@ -826,7 +833,8 @@ function spawnMonster() {
   img.style.display = "none";
   img.onload = function() { img.style.display = "block"; emo.style.display = "none"; };
   img.onerror = function() { img.style.display = "none"; emo.style.display = "block"; };
-  img.src = "monster" + ((idx % MONSTERS.length) + 1) + ".png";
+  var n = idx + 1;
+  img.src = "monster" + (n < 10 ? "0" + n : n) + ".png";
 
   var box = $("monsterBox");
   box.classList.remove("defeated", "shake", "attack", "appear");
