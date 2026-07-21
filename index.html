@@ -37,13 +37,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 9px;
     text-align: center;
+    overflow-y: auto;
+    padding: 6px 0;
   }
   .gameTitle {
-    font-size: 40px;
+    font-size: 32px;
     font-weight: bold;
-    line-height: 1.3;
+    line-height: 1.25;
     text-shadow: 3px 3px 0 #1a0f3d, -1px -1px 0 #ff69b4;
     animation: titleBounce 2s ease-in-out infinite;
   }
@@ -51,15 +53,15 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
   }
-  .titleMonsters { font-size: 44px; letter-spacing: 6px; }
+  .titleMonsters { font-size: 32px; letter-spacing: 4px; }
   .modeBtn {
     width: 100%;
-    padding: 18px 12px;
-    font-size: 24px;
+    padding: 10px 12px;
+    font-size: 18px;
     font-weight: bold;
     font-family: inherit;
     border: 4px solid #fff;
-    border-radius: 18px;
+    border-radius: 16px;
     color: #fff;
     cursor: pointer;
     box-shadow: 0 5px 0 rgba(0,0,0,.35);
@@ -69,8 +71,9 @@
   #btnMul { background: linear-gradient(180deg, #ff8a5c, #f4511e); }
   #btnDiv { background: linear-gradient(180deg, #5cc9ff, #1e88e5); }
   #btnKanji { background: linear-gradient(180deg, #7ee081, #2e9e46); }
-  .modeBtn small { display: block; font-size: 14px; font-weight: normal; margin-top: 4px; opacity: .95; }
-  .bestScore { font-size: 14px; color: #ffe082; margin-top: 4px; }
+  #btnGeo { background: linear-gradient(180deg, #4dd0e1, #00838f); }
+  .modeBtn small { display: block; font-size: 11px; font-weight: normal; margin-top: 2px; opacity: .95; }
+  .bestScore { font-size: 12px; color: #ffe082; margin-top: 2px; }
   #btnResetScore {
     font-family: inherit;
     font-size: 13px;
@@ -124,17 +127,22 @@
     text-align: center;
     position: relative;
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
-  #monsterName { font-size: 16px; font-weight: bold; }
+  #monsterName { font-size: 16px; font-weight: bold; flex-shrink: 0; }
   #monsterBox {
-    height: 88px;
+    flex: 1;
+    min-height: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
   }
-  #monsterImg { max-height: 84px; max-width: 140px; display: none; }
-  #monsterEmoji { font-size: 60px; line-height: 1; }
+  #monsterImg { max-height: 100%; max-width: 100%; object-fit: contain; display: none; }
+  #monsterEmoji { font-size: 76px; line-height: 1; }
   #monsterBox.shake { animation: shake .4s; }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -166,6 +174,7 @@
     height: 14px;
     overflow: hidden;
     margin-top: 4px;
+    flex-shrink: 0;
   }
   .hpBarInner {
     height: 100%;
@@ -228,6 +237,9 @@
   #questionMain { font-size: 38px; font-weight: bold; line-height: 1.2; }
   #questionMain.kanjiBig { font-size: 52px; }
   #questionMain.textQ { font-size: 16px; line-height: 1.45; text-align: left; padding: 2px 4px; }
+  #questionMain.symbolQ { display: flex; align-items: center; justify-content: center; }
+  .symSvg { width: 92px; height: 92px; }
+  .symGlyph { font-size: 64px; line-height: 1; }
 
   /* メッセージ */
   #message {
@@ -245,7 +257,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-top: auto;
     padding-bottom: 2px;
   }
   .choiceBtn {
@@ -326,10 +337,11 @@
   <div id="titleScreen">
     <div class="titleMonsters">👾🐲👻</div>
     <div class="gameTitle">べんきょう<br>バトル</div>
-    <div style="font-size:15px;">もんだいに こたえて モンスターを たおそう!</div>
+    <div style="font-size:13px;">もんだいに こたえて モンスターを たおそう!</div>
     <button class="modeBtn" id="btnMul">✖ かけ算モード<small>九九で たたかう!</small><span class="bestScore" id="bestMul"></span></button>
     <button class="modeBtn" id="btnDiv">➗ わり算モード<small>わり算で たたかう!</small><span class="bestScore" id="bestDiv"></span></button>
     <button class="modeBtn" id="btnKanji">📖 かんじモード<small>かんじの よみかたで たたかう!</small><span class="bestScore" id="bestKanji"></span></button>
+    <button class="modeBtn" id="btnGeo">🗾 ちりモード<small>とどうふけんと けんちょうしょざいちで たたかう!</small><span class="bestScore" id="bestGeo"></span></button>
     <button id="btnResetScore">🗑 スコアを リセット</button>
   </div>
 
@@ -625,6 +637,109 @@ var KANJI_G4 = [
   ["観察","かんさつ",["かんそく","けんがく","じっけん"]]
 ];
 
+/* ==================== ちりデータ (とどうふけん・けんちょうしょざいち・地方) ====================
+   [とどうふけん, けんちょうしょざいち, 地方]
+   なじみの ふかさで 3つの プールに わけている。 */
+var GEO_EASY = [
+  ["北海道","札幌市","北海道地方"], ["青森県","青森市","東北地方"], ["宮城県","仙台市","東北地方"], ["東京都","東京","関東地方"],
+  ["神奈川県","横浜市","関東地方"], ["静岡県","静岡市","中部地方"], ["愛知県","名古屋市","中部地方"], ["京都府","京都市","近畿地方"],
+  ["大阪府","大阪市","近畿地方"], ["兵庫県","神戸市","近畿地方"], ["広島県","広島市","中国地方"], ["福岡県","福岡市","九州地方"],
+  ["熊本県","熊本市","九州地方"], ["沖縄県","那覇市","九州地方"], ["長野県","長野市","中部地方"], ["石川県","金沢市","中部地方"]
+];
+var GEO_MED = [
+  ["岩手県","盛岡市","東北地方"], ["秋田県","秋田市","東北地方"], ["山形県","山形市","東北地方"], ["福島県","福島市","東北地方"],
+  ["茨城県","水戸市","関東地方"], ["栃木県","宇都宮市","関東地方"], ["群馬県","前橋市","関東地方"], ["埼玉県","さいたま市","関東地方"],
+  ["千葉県","千葉市","関東地方"], ["新潟県","新潟市","中部地方"], ["富山県","富山市","中部地方"], ["山梨県","甲府市","中部地方"],
+  ["岐阜県","岐阜市","中部地方"], ["三重県","津市","近畿地方"], ["岡山県","岡山市","中国地方"], ["山口県","山口市","中国地方"]
+];
+var GEO_HARD = [
+  ["福井県","福井市","中部地方"], ["滋賀県","大津市","近畿地方"], ["奈良県","奈良市","近畿地方"], ["和歌山県","和歌山市","近畿地方"],
+  ["鳥取県","鳥取市","中国地方"], ["島根県","松江市","中国地方"], ["徳島県","徳島市","四国地方"], ["香川県","高松市","四国地方"],
+  ["愛媛県","松山市","四国地方"], ["高知県","高知市","四国地方"], ["佐賀県","佐賀市","九州地方"], ["長崎県","長崎市","九州地方"],
+  ["大分県","大分市","九州地方"], ["宮崎県","宮崎市","九州地方"], ["鹿児島県","鹿児島市","九州地方"]
+];
+var GEO_REGIONS = ["北海道地方","東北地方","関東地方","中部地方","近畿地方","中国地方","四国地方","九州地方"];
+
+/* ==================== 地図記号データ ==================== */
+function symGlyph(ch) { return '<span class="symGlyph">' + ch + '</span>'; }
+function symSvg(inner) {
+  return '<svg viewBox="0 0 100 100" class="symSvg"><g fill="none" stroke="#333" stroke-width="7" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' + inner + '</g></svg>';
+}
+var SYM_EASY = [
+  { name: "学校", html: symGlyph("文") },
+  { name: "郵便局", html: symGlyph("〒") },
+  { name: "神社", html: symSvg('<line x1="25" y1="20" x2="25" y2="90"/><line x1="75" y1="20" x2="75" y2="90"/>' +
+      '<line x1="10" y1="18" x2="90" y2="18"/><line x1="18" y1="34" x2="82" y2="34"/>') },
+  { name: "寺", html: symGlyph("卍") },
+  { name: "病院", html: symSvg('<line x1="50" y1="15" x2="50" y2="85" stroke-width="16"/>' +
+      '<line x1="15" y1="50" x2="85" y2="50" stroke-width="16"/>') },
+  { name: "交番", html: symSvg('<line x1="20" y1="20" x2="80" y2="80"/><line x1="80" y1="20" x2="20" y2="80"/>') },
+  { name: "温泉", html: symGlyph("♨") }
+];
+var SYM_MED = [
+  { name: "市役所", html: symSvg('<circle cx="50" cy="50" r="35"/><circle cx="50" cy="50" r="18"/>') },
+  { name: "町村役場", html: symSvg('<circle cx="50" cy="50" r="30"/>') },
+  { name: "工場", html: symSvg('<circle cx="50" cy="50" r="24"/>' +
+      '<rect x="43" y="2" width="14" height="16" fill="#333" stroke="none"/>' +
+      '<rect x="43" y="82" width="14" height="16" fill="#333" stroke="none"/>' +
+      '<rect x="2" y="43" width="16" height="14" fill="#333" stroke="none"/>' +
+      '<rect x="82" y="43" width="16" height="14" fill="#333" stroke="none"/>') },
+  { name: "警察署", html: symSvg('<circle cx="50" cy="50" r="32"/>' +
+      '<line x1="32" y1="32" x2="68" y2="68"/><line x1="68" y1="32" x2="32" y2="68"/>') },
+  { name: "図書館", html: symSvg('<path d="M15,30 L50,20 L85,30 L50,85 Z"/><line x1="50" y1="20" x2="50" y2="85"/>') },
+  { name: "果樹園", html: symSvg('<circle cx="50" cy="50" r="28"/>' +
+      '<circle cx="50" cy="50" r="7" fill="#333" stroke="none"/>') }
+];
+var SYM_HARD = [
+  { name: "田", html: symSvg('<line x1="30" y1="38" x2="70" y2="38" stroke-width="10"/>' +
+      '<line x1="30" y1="62" x2="70" y2="62" stroke-width="10"/>') },
+  { name: "畑", html: symSvg('<line x1="35" y1="30" x2="50" y2="65" stroke-width="10"/>' +
+      '<line x1="65" y1="30" x2="50" y2="65" stroke-width="10"/>') },
+  { name: "茶畑", html: symSvg('<circle cx="50" cy="25" r="8" fill="#333" stroke="none"/>' +
+      '<circle cx="30" cy="65" r="8" fill="#333" stroke="none"/>' +
+      '<circle cx="70" cy="65" r="8" fill="#333" stroke="none"/>') }
+];
+
+/* ==================== せかいの国データ (ヒント→国めい) ====================
+   [国めい, ヒントの文しょう] */
+var COUNTRY_EASY = [
+  ["アメリカ","自由の女神ぞうや ディズニーランドで ゆうめいな 国だよ。"],
+  ["中国","パンダや 万里の長城で ゆうめいな、日本の となりの 大きな国だよ。"],
+  ["韓国","キムチや Kポップで ゆうめいな、日本の すぐ となりの 国だよ。"],
+  ["イギリス","赤い 2かいだてバスや 大きな 時計とう ビッグベンで ゆうめいな 国だよ。"],
+  ["フランス","エッフェルとうや おいしい パンで ゆうめいな 国だよ。"],
+  ["イタリア","ピザや パスタが うまれた、ながぐつの 形の 国だよ。"],
+  ["エジプト","大きな ピラミッドと スフィンクスが ある 国だよ。"],
+  ["オーストラリア","カンガルーや コアラが すむ、みなみの 大きな 国だよ。"],
+  ["ブラジル","サッカーが強く、大きな 熱帯雨林 アマゾンが ある 国だよ。"],
+  ["インド","カレーりょうりが ゆうめいで、せかいで いちばん 人口が 多い 国だよ。"],
+  ["ドイツ","サッカーが強く、車づくりで ゆうめいな ヨーロッパの 国だよ。"],
+  ["ロシア","せかいで いちばん 面積が 広い 国だよ。"],
+  ["カナダ","メープルシロップと 広い しぜんで ゆうめいな、アメリカの 北にある 国だよ。"],
+  ["タイ","ぞうと 王さまの おしろで ゆうめいな 東南アジアの 国だよ。"]
+];
+var COUNTRY_MED = [
+  ["スペイン","フラメンコおどりと サッカーで ゆうめいな 国だよ。"],
+  ["メキシコ","タコスや 古代の ピラミッドいせきで ゆうめいな 国だよ。"],
+  ["フィリピン","たくさんの しまじまから できている、東南アジアの 国だよ。"],
+  ["ベトナム","フォーと いう めんりょうりで ゆうめいな、細長い 形の 国だよ。"],
+  ["インドネシア","せかいで いちばん しまの 数が 多い、東南アジアの 国だよ。"],
+  ["トルコ","アジアと ヨーロッパの さかいめに ある 国だよ。"],
+  ["ケニア","サファリで ライオンや ゾウが 見られる、アフリカの 国だよ。"],
+  ["スイス","美しい 山と とけいづくりで ゆうめいな、ヨーロッパの 国だよ。"],
+  ["オランダ","チューリップと 風車で ゆうめいな、ヨーロッパの 国だよ。"],
+  ["ニュージーランド","羊が たくさんいて、ラグビーが 強い 国だよ。"]
+];
+var COUNTRY_HARD = [
+  ["サウジアラビア","大きな さばくと 石油で ゆうめいな 国だよ。"],
+  ["モンゴル","馬に のる 遊牧民と 広い 草原で ゆうめいな 国だよ。"],
+  ["ペルー","マチュピチュの いせきが ある、南アメリカの 国だよ。"],
+  ["ノルウェー","フィヨルドと いう ふかい 入り江が ある、北ヨーロッパの 国だよ。"],
+  ["アルゼンチン","サッカーが強く、南アメリカの 南のほうに ある 国だよ。"],
+  ["フィンランド","サンタクロースの 村が ある、北ヨーロッパの 国だよ。"]
+];
+
 /* ==================== モンスター ====================
    レベルごとに 1体ずつ (がぞうは monster01.png 〜 monster15.png) */
 var MONSTERS = [
@@ -683,12 +798,22 @@ var SFX = {
 var MODES = {
   mul:   { label: "かけ算",  storageKey: "bb_best_mul" },
   div:   { label: "わり算",  storageKey: "bb_best_div" },
-  kanji: { label: "かんじ",  storageKey: "bb_best_kanji" }
+  kanji: { label: "かんじ",  storageKey: "bb_best_kanji" },
+  geo:   { label: "ちり",    storageKey: "bb_best_geo" }
 };
 var state = {};
 var kanjiDeck = [];
 var kanjiPool = [];
 var kanjiDeckTier = -1;
+var geoDeck = [];
+var geoPool = [];
+var geoDeckTier = -1;
+var symbolDeck = [];
+var symbolPool = [];
+var symbolDeckTier = -1;
+var countryDeck = [];
+var countryPool = [];
+var countryDeckTier = -1;
 var busy = false;
 
 /* レベル15の モンスターを たおしたら ゲームクリア */
@@ -712,6 +837,7 @@ function shuffle(arr) {
   return arr;
 }
 function rand(n) { return Math.floor(Math.random() * n); }
+function hasOkurigana(s) { return /[぀-ゟ]/.test(s); }
 
 function getBest(mode) {
   try { return parseInt(localStorage.getItem(MODES[mode].storageKey) || "0", 10) || 0; }
@@ -730,10 +856,11 @@ function showTitle() {
   b = getBest("mul");   $("bestMul").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("div");   $("bestDiv").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("kanji"); $("bestKanji").textContent = b ? "さいこう " + b + " てん" : "";
+  b = getBest("geo");   $("bestGeo").textContent   = b ? "さいこう " + b + " てん" : "";
   // スコアが なにも ないときは リセットボタンを かくす
   disarmResetBtn();
   $("btnResetScore").style.display =
-    (getBest("mul") || getBest("div") || getBest("kanji")) ? "block" : "none";
+    (getBest("mul") || getBest("div") || getBest("kanji") || getBest("geo")) ? "block" : "none";
 }
 
 /* スコアリセット (まちがえて おさないように 2かい おして かくてい) */
@@ -758,6 +885,7 @@ function onResetScore() {
     localStorage.removeItem(MODES.mul.storageKey);
     localStorage.removeItem(MODES.div.storageKey);
     localStorage.removeItem(MODES.kanji.storageKey);
+    localStorage.removeItem(MODES.geo.storageKey);
   } catch (e) {}
   showTitle();
 }
@@ -779,6 +907,13 @@ function startGame(mode) {
   };
   kanjiDeck = [];
   kanjiDeckTier = -1;
+  geoDeck = [];
+  geoDeckTier = -1;
+  symbolDeck = [];
+  symbolDeckTier = -1;
+  countryDeck = [];
+  countryDeckTier = -1;
+  lastRegionPref = "";
   $("titleScreen").style.display = "none";
   $("gameScreen").style.display = "flex";
   $("overlay").style.display = "none";
@@ -857,6 +992,7 @@ function popDamage(text, color) {
 function makeQuestion() {
   if (state.mode === "mul") return makeMulQuestion();
   if (state.mode === "div") return makeDivQuestion();
+  if (state.mode === "geo") return makeGeoQuestion();
   return makeKanjiQuestion();
 }
 
@@ -1003,8 +1139,11 @@ function makeKanjiQuestion() {
 function makeReadingToKanjiQuestion(item) {
   // まちがい候補は おなじプールの べつの かんじから えらぶ。
   // おなじ よみの かんじ (例: 街/町 = まち) は 正解が 2つに なるので のぞく。
+  // 送り仮名の あり・なしは まぜない (例: 「おる」の こたえに 送り仮名なしの
+  // かんじが まざると 見た目で こたえが わかってしまう)。
+  var itemHasOku = hasOkurigana(item[0]);
   var others = kanjiPool.filter(function(e) {
-    return e[0] !== item[0] && e[1] !== item[1];
+    return e[0] !== item[0] && e[1] !== item[1] && hasOkurigana(e[0]) === itemHasOku;
   });
   // 文字数が おなじものを ゆうせん (見た目で わからないように)
   var sameLen = others.filter(function(e) { return e[0].length === item[0].length; });
@@ -1019,6 +1158,132 @@ function makeReadingToKanjiQuestion(item) {
   };
 }
 
+function ensureGeoPool() {
+  // レベルが あがると なじみの あるものだけ → ぜんこくの とどうふけんに かわる
+  var d = difficulty();
+  if (geoDeck.length === 0 || geoDeckTier !== d) {
+    geoPool = d === 2 ? GEO_MED.concat(GEO_HARD) :
+              d === 1 ? GEO_MED.slice() :
+                        GEO_EASY.slice();
+    geoDeck = shuffle(geoPool.slice());
+    geoDeckTier = d;
+  }
+}
+
+function makeGeoQuestion() {
+  ensureGeoPool();
+  // とどうふけん・けんちょうしょざいちを メインに、地方/地図記号/せかいの国も まぜて だす
+  var roll = rand(100);
+  if (roll < 20) return makeRegionQuestion();
+  if (roll < 40) return makeSymbolQuestion();
+  if (roll < 60) return makeCountryQuestion();
+  return makeGeoPrefQuestion();
+}
+
+function makeGeoPrefQuestion() {
+  var item = geoDeck.pop();
+  // とどうふけん→けんちょうしょざいち と ぎゃく(けんちょうしょざいち→とどうふけん)を 半分ずつ だす
+  if (rand(2) === 0) return makeCapitalToPrefQuestion(item);
+  return makePrefToCapitalQuestion(item);
+}
+
+var lastRegionPref = "";
+function makeRegionQuestion() {
+  var item;
+  do {
+    item = geoPool[rand(geoPool.length)];
+  } while (item[0] === lastRegionPref && geoPool.length > 1);
+  lastRegionPref = item[0];
+  var correct = item[2];
+  var wrongs = shuffle(GEO_REGIONS.filter(function(r) { return r !== correct; })).slice(0, 3);
+  return {
+    label: "何地方の とどうふけんかな?",
+    main: item[0],
+    big: item[0].length <= 4,
+    answer: correct,
+    choices: shuffle([correct, wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+function makeSymbolQuestion() {
+  var d = difficulty();
+  if (symbolDeck.length === 0 || symbolDeckTier !== d) {
+    symbolPool = d === 2 ? SYM_MED.concat(SYM_HARD) :
+                 d === 1 ? SYM_MED.slice() :
+                           SYM_EASY.slice();
+    symbolDeck = shuffle(symbolPool.slice());
+    symbolDeckTier = d;
+  }
+  var item = symbolDeck.pop();
+  var wrongs = shuffle(symbolPool.filter(function(e) { return e !== item; }))
+    .slice(0, 3).map(function(e) { return e.name; });
+  return {
+    label: "この ちずきごうは なに?",
+    main: item.html,
+    big: false,
+    symbol: true,
+    answer: item.name,
+    choices: shuffle([item.name, wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+function makeCountryQuestion() {
+  var d = difficulty();
+  if (countryDeck.length === 0 || countryDeckTier !== d) {
+    countryPool = d === 2 ? COUNTRY_MED.concat(COUNTRY_HARD) :
+                  d === 1 ? COUNTRY_MED.slice() :
+                            COUNTRY_EASY.slice();
+    countryDeck = shuffle(countryPool.slice());
+    countryDeckTier = d;
+  }
+  var item = countryDeck.pop();
+  var wrongs = shuffle(countryPool.filter(function(e) { return e !== item; }))
+    .slice(0, 3).map(function(e) { return e[0]; });
+  return {
+    label: "この ヒントの 国は どこ?",
+    main: item[1],
+    big: false,
+    text: true,
+    answer: item[0],
+    choices: shuffle([item[0], wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+function makePrefToCapitalQuestion(item) {
+  var wrongs = pickGeoDistractors(item, 1);
+  return {
+    label: "けんちょうしょざいちは どこ?",
+    main: item[0],
+    big: item[0].length <= 4,
+    answer: item[1],
+    choices: shuffle([item[1], wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+function makeCapitalToPrefQuestion(item) {
+  var wrongs = pickGeoDistractors(item, 0);
+  return {
+    label: "どの とどうふけんの けんちょうしょざいちかな?",
+    main: item[1],
+    big: item[1].length <= 4,
+    answer: item[0],
+    choices: shuffle([item[0], wrongs[0], wrongs[1], wrongs[2]])
+  };
+}
+
+function pickGeoDistractors(item, field) {
+  var others = geoPool.filter(function(e) {
+    if (e === item) return false;
+    // 「東京」だけ「市」が つかず 見た目が うくので、こたえが 東京の ときだけ こうほに する
+    if (field === 1 && e[1] === "東京" && item[1] !== "東京") return false;
+    return true;
+  });
+  var target = item[field];
+  var sameLen = others.filter(function(e) { return e[field].length === target.length; });
+  var pool = sameLen.length >= 3 ? sameLen : others;
+  return shuffle(pool.slice()).slice(0, 3).map(function(e) { return e[field]; });
+}
+
 /* ==================== しゅつだい・かいとう ==================== */
 var currentQ = null;
 
@@ -1026,9 +1291,14 @@ function nextQuestion() {
   currentQ = makeQuestion();
   $("questionLabel").textContent = currentQ.label;
   var qm = $("questionMain");
-  qm.textContent = currentQ.main;
-  qm.classList.toggle("kanjiBig", currentQ.big);
+  qm.classList.toggle("kanjiBig", !!currentQ.big);
   qm.classList.toggle("textQ", !!currentQ.text);
+  qm.classList.toggle("symbolQ", !!currentQ.symbol);
+  if (currentQ.symbol) {
+    qm.innerHTML = currentQ.main;
+  } else {
+    qm.textContent = currentQ.main;
+  }
   $("message").textContent = "";
   $("message").className = "";
   for (var i = 0; i < 4; i++) {
@@ -1199,6 +1469,7 @@ function showResult(kind) {
 $("btnMul").addEventListener("click", function() { startGame("mul"); });
 $("btnDiv").addEventListener("click", function() { startGame("div"); });
 $("btnKanji").addEventListener("click", function() { startGame("kanji"); });
+$("btnGeo").addEventListener("click", function() { startGame("geo"); });
 choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
