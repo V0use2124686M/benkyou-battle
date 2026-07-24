@@ -72,6 +72,7 @@
   #btnDiv { background: linear-gradient(180deg, #5cc9ff, #1e88e5); }
   #btnKanji { background: linear-gradient(180deg, #7ee081, #2e9e46); }
   #btnGeo { background: linear-gradient(180deg, #4dd0e1, #00838f); }
+  #btnEn { background: linear-gradient(180deg, #ffb74d, #ef6c00); }
   .modeBtn small { display: block; font-size: 11px; font-weight: normal; margin-top: 2px; opacity: .95; }
   .bestScore { font-size: 12px; color: #ffe082; margin-top: 2px; }
   #btnResetScore {
@@ -240,6 +241,16 @@
   #questionMain.symbolQ { display: flex; align-items: center; justify-content: center; }
   .symSvg { width: 92px; height: 92px; }
   .symGlyph { font-size: 64px; line-height: 1; }
+  /* えいたんご + カタカナフリガナ */
+  #questionMain.enQ { display: flex; align-items: center; justify-content: center; }
+  .enWord { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; }
+  #questionMain .enMain { font-size: 40px; font-weight: bold; }
+  #questionMain .enKana { font-size: 16px; color: #9c6f00; margin-top: 3px; font-weight: bold; }
+  .choiceBtn .enWord .enMain { font-size: 21px; }
+  .choiceBtn .enWord .enMainJa { font-size: 18px; }
+  .choiceBtn .enWord .enKana { font-size: 10px; opacity: .92; font-weight: normal; margin-top: 1px; }
+  /* こたえる まえは よみの 場所だけ とって かくす (レイアウトを うごかさない) */
+  .choiceBtn.hideReading .enKana { visibility: hidden; }
 
   /* メッセージ */
   #message {
@@ -342,6 +353,7 @@
     <button class="modeBtn" id="btnDiv">➗ わり算モード<small>わり算で たたかう!</small><span class="bestScore" id="bestDiv"></span></button>
     <button class="modeBtn" id="btnKanji">📖 かんじモード<small>かんじの よみかたで たたかう!</small><span class="bestScore" id="bestKanji"></span></button>
     <button class="modeBtn" id="btnGeo">🗾 ちりモード<small>とどうふけんと けんちょうしょざいちで たたかう!</small><span class="bestScore" id="bestGeo"></span></button>
+    <button class="modeBtn" id="btnEn">🔤 えいごモード<small>えいたんごの いみで たたかう!</small><span class="bestScore" id="bestEn"></span></button>
     <button id="btnResetScore">🗑 スコアを リセット</button>
   </div>
 
@@ -740,6 +752,59 @@ var COUNTRY_HARD = [
   ["フィンランド","サンタクロースの 村が ある、北ヨーロッパの 国だよ。"]
 ];
 
+/* ==================== えいたんごデータ ====================
+   [えいたんご, カタカナよみ, いみ, [まちがいのいみ1, 2, 3]] */
+var EN_EASY = [
+  ["apple","アップル","りんご",["みかん","ぶどう","いちご"]],
+  ["dog","ドッグ","いぬ",["ねこ","うし","うま"]],
+  ["cat","キャット","ねこ",["いぬ","ねずみ","うさぎ"]],
+  ["book","ブック","ほん",["ノート","えんぴつ","かばん"]],
+  ["red","レッド","あか",["あお","きいろ","みどり"]],
+  ["blue","ブルー","あお",["あか","しろ","くろ"]],
+  ["fish","フィッシュ","さかな",["とり","むし","かい"]],
+  ["bird","バード","とり",["さかな","いぬ","へび"]],
+  ["water","ウォーター","みず",["ぎゅうにゅう","ジュース","おゆ"]],
+  ["milk","ミルク","ぎゅうにゅう",["みず","おちゃ","ジュース"]],
+  ["egg","エッグ","たまご",["パン","ごはん","にく"]],
+  ["hand","ハンド","て",["あし","あたま","みみ"]],
+  ["eye","アイ","め",["みみ","はな","くち"]],
+  ["star","スター","ほし",["つき","たいよう","くも"]],
+  ["sun","サン","たいよう",["つき","ほし","そら"]],
+  ["rain","レイン","あめ",["ゆき","かぜ","くも"]]
+];
+var EN_MED = [
+  ["school","スクール","がっこう",["こうえん","びょういん","おみせ"]],
+  ["teacher","ティーチャー","せんせい",["せいと","いしゃ","けいさつ"]],
+  ["friend","フレンド","ともだち",["かぞく","せんせい","となり"]],
+  ["family","ファミリー","かぞく",["ともだち","チーム","クラス"]],
+  ["morning","モーニング","あさ",["よる","ひる","ゆうがた"]],
+  ["night","ナイト","よる",["あさ","ひる","ゆうがた"]],
+  ["summer","サマー","なつ",["ふゆ","はる","あき"]],
+  ["winter","ウィンター","ふゆ",["なつ","はる","あき"]],
+  ["flower","フラワー","はな",["き","くさ","は"]],
+  ["mountain","マウンテン","やま",["かわ","うみ","もり"]],
+  ["river","リバー","かわ",["やま","うみ","みずうみ"]],
+  ["train","トレイン","でんしゃ",["くるま","バス","ひこうき"]],
+  ["money","マネー","おかね",["きって","カード","チケット"]],
+  ["window","ウィンドウ","まど",["ドア","かべ","ゆか"]],
+  ["kitchen","キッチン","だいどころ",["おふろ","へや","にわ"]],
+  ["animal","アニマル","どうぶつ",["しょくぶつ","むし","さかな"]]
+];
+var EN_HARD = [
+  ["breakfast","ブレックファスト","あさごはん",["ひるごはん","ばんごはん","おやつ"]],
+  ["vegetable","ベジタブル","やさい",["くだもの","おにく","おかし"]],
+  ["hospital","ホスピタル","びょういん",["がっこう","としょかん","えき"]],
+  ["library","ライブラリー","としょかん",["びょういん","はくぶつかん","こうえん"]],
+  ["weather","ウェザー","てんき",["きせつ","じかん","カレンダー"]],
+  ["season","シーズン","きせつ",["てんき","つき","ようび"]],
+  ["language","ラングエッジ","ことば",["こえ","もじ","おと"]],
+  ["question","クエスチョン","しつもん",["こたえ","もんだい","せつめい"]],
+  ["important","インポータント","たいせつな",["やさしい","たのしい","むずかしい"]],
+  ["beautiful","ビューティフル","うつくしい",["おおきい","つよい","はやい"]],
+  ["delicious","デリシャス","おいしい",["あまい","からい","つめたい"]],
+  ["favorite","フェイバリット","おきにいりの",["あたらしい","ふるい","たいせつな"]]
+];
+
 /* ==================== モンスター ====================
    レベルごとに 1体ずつ (がぞうは monster01.png 〜 monster15.png) */
 var MONSTERS = [
@@ -799,7 +864,8 @@ var MODES = {
   mul:   { label: "かけ算",  storageKey: "bb_best_mul" },
   div:   { label: "わり算",  storageKey: "bb_best_div" },
   kanji: { label: "かんじ",  storageKey: "bb_best_kanji" },
-  geo:   { label: "ちり",    storageKey: "bb_best_geo" }
+  geo:   { label: "ちり",    storageKey: "bb_best_geo" },
+  en:    { label: "えいご",  storageKey: "bb_best_en" }
 };
 var state = {};
 var kanjiDeck = [];
@@ -814,6 +880,9 @@ var symbolDeckTier = -1;
 var countryDeck = [];
 var countryPool = [];
 var countryDeckTier = -1;
+var enDeck = [];
+var enPool = [];
+var enDeckTier = -1;
 var busy = false;
 
 /* レベル15の モンスターを たおしたら ゲームクリア */
@@ -857,10 +926,11 @@ function showTitle() {
   b = getBest("div");   $("bestDiv").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("kanji"); $("bestKanji").textContent = b ? "さいこう " + b + " てん" : "";
   b = getBest("geo");   $("bestGeo").textContent   = b ? "さいこう " + b + " てん" : "";
+  b = getBest("en");    $("bestEn").textContent    = b ? "さいこう " + b + " てん" : "";
   // スコアが なにも ないときは リセットボタンを かくす
   disarmResetBtn();
   $("btnResetScore").style.display =
-    (getBest("mul") || getBest("div") || getBest("kanji") || getBest("geo")) ? "block" : "none";
+    (getBest("mul") || getBest("div") || getBest("kanji") || getBest("geo") || getBest("en")) ? "block" : "none";
 }
 
 /* スコアリセット (まちがえて おさないように 2かい おして かくてい) */
@@ -886,6 +956,7 @@ function onResetScore() {
     localStorage.removeItem(MODES.div.storageKey);
     localStorage.removeItem(MODES.kanji.storageKey);
     localStorage.removeItem(MODES.geo.storageKey);
+    localStorage.removeItem(MODES.en.storageKey);
   } catch (e) {}
   showTitle();
 }
@@ -914,6 +985,8 @@ function startGame(mode) {
   countryDeck = [];
   countryDeckTier = -1;
   lastRegionPref = "";
+  enDeck = [];
+  enDeckTier = -1;
   $("titleScreen").style.display = "none";
   $("gameScreen").style.display = "flex";
   $("overlay").style.display = "none";
@@ -993,6 +1066,7 @@ function makeQuestion() {
   if (state.mode === "mul") return makeMulQuestion();
   if (state.mode === "div") return makeDivQuestion();
   if (state.mode === "geo") return makeGeoQuestion();
+  if (state.mode === "en") return makeEnglishQuestion();
   return makeKanjiQuestion();
 }
 
@@ -1284,6 +1358,78 @@ function pickGeoDistractors(item, field) {
   return shuffle(pool.slice()).slice(0, 3).map(function(e) { return e[field]; });
 }
 
+/* ==================== えいご ==================== */
+function enWordHtml(word, kana) {
+  return '<span class="enWord"><span class="enMain">' + word +
+    '</span><span class="enKana">' + kana + '</span></span>';
+}
+// いみ(日本語)を メインに、下に えいご + カタカナよみを そえる せんたくし
+function enMeaningHtml(ja, word, kana) {
+  return '<span class="enWord"><span class="enMain enMainJa">' + ja +
+    '</span><span class="enKana">' + word + ' / ' + kana + '</span></span>';
+}
+
+function makeEnglishQuestion() {
+  var d = difficulty();
+  if (enDeck.length === 0 || enDeckTier !== d) {
+    enPool = d === 2 ? EN_MED.concat(EN_HARD) :
+             d === 1 ? EN_MED.slice() :
+                       EN_EASY.slice();
+    enDeck = shuffle(enPool.slice());
+    enDeckTier = d;
+  }
+  var item = enDeck.pop();
+  // えいご→いみ と いみ→えいご を 半分ずつ だす
+  if (rand(2) === 0) return makeMeaningToEnQuestion(item);
+  return makeEnToMeaningQuestion(item);
+}
+
+function makeEnToMeaningQuestion(item) {
+  // item = [えいご, カタカナ, いみ, [まちがい1,2,3]]
+  // もんだいちゅうは いみ(日本語)だけを みせ、こたえた あとに 全せんたくしへ
+  // えいご+カタカナよみを だす (先に みえると こたえが わかってしまうため)。
+  // そのため まちがいも えいご・よみを もつ プールの ほかの語から えらぶ。
+  var others = shuffle(enPool.filter(function(e) {
+    return e[0] !== item[0] && e[2] !== item[2];
+  })).slice(0, 3);
+  var opts = [item].concat(others).map(function(e) {
+    return { val: e[2], html: enMeaningHtml(e[2], e[0], e[1]) };
+  });
+  opts = shuffle(opts);
+  return {
+    label: "この えいごの いみは?",
+    main: enWordHtml(item[0], item[1]),
+    mainHtml: true,
+    enQ: true,
+    answer: item[2],
+    answerLabel: item[2] + " (" + item[0] + " / " + item[1] + ")",
+    choices: opts.map(function(o) { return o.val; }),
+    choicesHtml: opts.map(function(o) { return o.html; }),
+    // よみの行は 場所だけ とっておき、こたえた あとに 見えるようにする
+    hideReadingUntilAnswer: true
+  };
+}
+
+function makeMeaningToEnQuestion(item) {
+  // いみ(日本語)を みせて えいごを えらばせる。せんたくしには カタカナよみを つける。
+  var others = shuffle(enPool.filter(function(e) {
+    return e[0] !== item[0] && e[2] !== item[2];
+  })).slice(0, 3);
+  var opts = [item].concat(others).map(function(e) {
+    return { val: e[0], html: enWordHtml(e[0], e[1]) };
+  });
+  opts = shuffle(opts);
+  return {
+    label: "「" + item[2] + "」を えいごで?",
+    main: item[2],
+    big: item[2].length <= 5,
+    answer: item[0],
+    answerLabel: item[0] + " (" + item[1] + ")",
+    choices: opts.map(function(o) { return o.val; }),
+    choicesHtml: opts.map(function(o) { return o.html; })
+  };
+}
+
 /* ==================== しゅつだい・かいとう ==================== */
 var currentQ = null;
 
@@ -1294,7 +1440,8 @@ function nextQuestion() {
   qm.classList.toggle("kanjiBig", !!currentQ.big);
   qm.classList.toggle("textQ", !!currentQ.text);
   qm.classList.toggle("symbolQ", !!currentQ.symbol);
-  if (currentQ.symbol) {
+  qm.classList.toggle("enQ", !!currentQ.enQ);
+  if (currentQ.symbol || currentQ.mainHtml) {
     qm.innerHTML = currentQ.main;
   } else {
     qm.textContent = currentQ.main;
@@ -1302,9 +1449,19 @@ function nextQuestion() {
   $("message").textContent = "";
   $("message").className = "";
   for (var i = 0; i < 4; i++) {
-    choiceBtns[i].textContent = currentQ.choices[i];
-    choiceBtns[i].className = "choiceBtn";
-    choiceBtns[i].disabled = false;
+    var b = choiceBtns[i];
+    b.className = "choiceBtn";
+    // よみを こたえた あとに だす もんだいでは、いまは よみを かくしておく
+    // (行の 場所は とっておくので レイアウトは うごかない)
+    if (currentQ.hideReadingUntilAnswer) b.classList.add("hideReading");
+    b.disabled = false;
+    // dataset.val に せいかいはんてい用の あたいを もつ (フリガナ付き表示でも マッチできるように)
+    b.setAttribute("data-val", currentQ.choices[i]);
+    if (currentQ.choicesHtml) {
+      b.innerHTML = currentQ.choicesHtml[i];
+    } else {
+      b.textContent = currentQ.choices[i];
+    }
   }
   busy = false;
 }
@@ -1313,10 +1470,16 @@ function answer(idx) {
   if (busy || !currentQ) return;
   busy = true;
   ensureAudio();
-  var picked = choiceBtns[idx].textContent;
+  var picked = choiceBtns[idx].getAttribute("data-val");
   var isCorrect = picked === currentQ.answer;
 
   choiceBtns.forEach(function(b) { b.disabled = true; });
+
+  // こたえた あとに よみを だす もんだい (えいご→いみ) では、ここで かくしていた
+  // よみ (えいご+カタカナ) を 全せんたくしに 見えるようにする。
+  if (currentQ.hideReadingUntilAnswer) {
+    choiceBtns.forEach(function(b) { b.classList.remove("hideReading"); });
+  }
 
   if (isCorrect) {
     choiceBtns[idx].classList.add("correct");
@@ -1325,7 +1488,7 @@ function answer(idx) {
     choiceBtns[idx].classList.add("wrong");
     // せいかいのボタンを ひからせる
     choiceBtns.forEach(function(b) {
-      if (b.textContent === currentQ.answer) b.classList.add("correct");
+      if (b.getAttribute("data-val") === currentQ.answer) b.classList.add("correct");
     });
     onWrong();
   }
@@ -1367,7 +1530,7 @@ function onWrong() {
   state.combo = 0;
 
   var msg = $("message");
-  msg.textContent = "おしい! こたえは「" + currentQ.answer + "」だよ";
+  msg.textContent = "おしい! こたえは「" + (currentQ.answerLabel || currentQ.answer) + "」だよ";
   msg.className = "bad";
   updateHud();
 
@@ -1470,6 +1633,7 @@ $("btnMul").addEventListener("click", function() { startGame("mul"); });
 $("btnDiv").addEventListener("click", function() { startGame("div"); });
 $("btnKanji").addEventListener("click", function() { startGame("kanji"); });
 $("btnGeo").addEventListener("click", function() { startGame("geo"); });
+$("btnEn").addEventListener("click", function() { startGame("en"); });
 choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
