@@ -251,6 +251,14 @@
   .choiceBtn .enWord .enKana { font-size: 10px; opacity: .92; font-weight: normal; margin-top: 1px; }
   /* こたえる まえは よみの 場所だけ とって かくす (レイアウトを うごかさない) */
   .choiceBtn.hideReading .enKana { visibility: hidden; }
+  /* ふりがな (ルビ) */
+  ruby { ruby-align: center; }
+  rt { font-weight: normal; user-select: none; }
+  #questionMain rt { font-size: 40%; color: #7b5e00; }
+  /* ヒントの文しょうは ルビの ぶんだけ 行間を ひろげる */
+  #questionMain.rubyBlock { line-height: 2.1; }
+  #questionMain.rubyBlock rt { font-size: 62%; }
+  .choiceBtn rt { font-size: 42%; opacity: .95; }
 
   /* メッセージ */
   #message {
@@ -650,27 +658,68 @@ var KANJI_G4 = [
 ];
 
 /* ==================== ちりデータ (とどうふけん・けんちょうしょざいち・地方) ====================
-   [とどうふけん, けんちょうしょざいち, 地方]
+   [とどうふけん, けんちょうしょざいち, 地方, とどうふけんのよみ, けんちょうしょざいちのよみ]
    なじみの ふかさで 3つの プールに わけている。 */
 var GEO_EASY = [
-  ["北海道","札幌市","北海道地方"], ["青森県","青森市","東北地方"], ["宮城県","仙台市","東北地方"], ["東京都","東京","関東地方"],
-  ["神奈川県","横浜市","関東地方"], ["静岡県","静岡市","中部地方"], ["愛知県","名古屋市","中部地方"], ["京都府","京都市","近畿地方"],
-  ["大阪府","大阪市","近畿地方"], ["兵庫県","神戸市","近畿地方"], ["広島県","広島市","中国地方"], ["福岡県","福岡市","九州地方"],
-  ["熊本県","熊本市","九州地方"], ["沖縄県","那覇市","九州地方"], ["長野県","長野市","中部地方"], ["石川県","金沢市","中部地方"]
+  ["北海道","札幌市","北海道地方","ほっかいどう","さっぽろし"],
+  ["青森県","青森市","東北地方","あおもりけん","あおもりし"],
+  ["宮城県","仙台市","東北地方","みやぎけん","せんだいし"],
+  ["東京都","東京","関東地方","とうきょうと","とうきょう"],
+  ["神奈川県","横浜市","関東地方","かながわけん","よこはまし"],
+  ["静岡県","静岡市","中部地方","しずおかけん","しずおかし"],
+  ["愛知県","名古屋市","中部地方","あいちけん","なごやし"],
+  ["京都府","京都市","近畿地方","きょうとふ","きょうとし"],
+  ["大阪府","大阪市","近畿地方","おおさかふ","おおさかし"],
+  ["兵庫県","神戸市","近畿地方","ひょうごけん","こうべし"],
+  ["広島県","広島市","中国地方","ひろしまけん","ひろしまし"],
+  ["福岡県","福岡市","九州地方","ふくおかけん","ふくおかし"],
+  ["熊本県","熊本市","九州地方","くまもとけん","くまもとし"],
+  ["沖縄県","那覇市","九州地方","おきなわけん","なはし"],
+  ["長野県","長野市","中部地方","ながのけん","ながのし"],
+  ["石川県","金沢市","中部地方","いしかわけん","かなざわし"]
 ];
 var GEO_MED = [
-  ["岩手県","盛岡市","東北地方"], ["秋田県","秋田市","東北地方"], ["山形県","山形市","東北地方"], ["福島県","福島市","東北地方"],
-  ["茨城県","水戸市","関東地方"], ["栃木県","宇都宮市","関東地方"], ["群馬県","前橋市","関東地方"], ["埼玉県","さいたま市","関東地方"],
-  ["千葉県","千葉市","関東地方"], ["新潟県","新潟市","中部地方"], ["富山県","富山市","中部地方"], ["山梨県","甲府市","中部地方"],
-  ["岐阜県","岐阜市","中部地方"], ["三重県","津市","近畿地方"], ["岡山県","岡山市","中国地方"], ["山口県","山口市","中国地方"]
+  ["岩手県","盛岡市","東北地方","いわてけん","もりおかし"],
+  ["秋田県","秋田市","東北地方","あきたけん","あきたし"],
+  ["山形県","山形市","東北地方","やまがたけん","やまがたし"],
+  ["福島県","福島市","東北地方","ふくしまけん","ふくしまし"],
+  ["茨城県","水戸市","関東地方","いばらきけん","みとし"],
+  ["栃木県","宇都宮市","関東地方","とちぎけん","うつのみやし"],
+  ["群馬県","前橋市","関東地方","ぐんまけん","まえばしし"],
+  ["埼玉県","さいたま市","関東地方","さいたまけん","さいたまし"],
+  ["千葉県","千葉市","関東地方","ちばけん","ちばし"],
+  ["新潟県","新潟市","中部地方","にいがたけん","にいがたし"],
+  ["富山県","富山市","中部地方","とやまけん","とやまし"],
+  ["山梨県","甲府市","中部地方","やまなしけん","こうふし"],
+  ["岐阜県","岐阜市","中部地方","ぎふけん","ぎふし"],
+  ["三重県","津市","近畿地方","みえけん","つし"],
+  ["岡山県","岡山市","中国地方","おかやまけん","おかやまし"],
+  ["山口県","山口市","中国地方","やまぐちけん","やまぐちし"]
 ];
 var GEO_HARD = [
-  ["福井県","福井市","中部地方"], ["滋賀県","大津市","近畿地方"], ["奈良県","奈良市","近畿地方"], ["和歌山県","和歌山市","近畿地方"],
-  ["鳥取県","鳥取市","中国地方"], ["島根県","松江市","中国地方"], ["徳島県","徳島市","四国地方"], ["香川県","高松市","四国地方"],
-  ["愛媛県","松山市","四国地方"], ["高知県","高知市","四国地方"], ["佐賀県","佐賀市","九州地方"], ["長崎県","長崎市","九州地方"],
-  ["大分県","大分市","九州地方"], ["宮崎県","宮崎市","九州地方"], ["鹿児島県","鹿児島市","九州地方"]
+  ["福井県","福井市","中部地方","ふくいけん","ふくいし"],
+  ["滋賀県","大津市","近畿地方","しがけん","おおつし"],
+  ["奈良県","奈良市","近畿地方","ならけん","ならし"],
+  ["和歌山県","和歌山市","近畿地方","わかやまけん","わかやまし"],
+  ["鳥取県","鳥取市","中国地方","とっとりけん","とっとりし"],
+  ["島根県","松江市","中国地方","しまねけん","まつえし"],
+  ["徳島県","徳島市","四国地方","とくしまけん","とくしまし"],
+  ["香川県","高松市","四国地方","かがわけん","たかまつし"],
+  ["愛媛県","松山市","四国地方","えひめけん","まつやまし"],
+  ["高知県","高知市","四国地方","こうちけん","こうちし"],
+  ["佐賀県","佐賀市","九州地方","さがけん","さがし"],
+  ["長崎県","長崎市","九州地方","ながさきけん","ながさきし"],
+  ["大分県","大分市","九州地方","おおいたけん","おおいたし"],
+  ["宮崎県","宮崎市","九州地方","みやざきけん","みやざきし"],
+  ["鹿児島県","鹿児島市","九州地方","かごしまけん","かごしまし"]
 ];
 var GEO_REGIONS = ["北海道地方","東北地方","関東地方","中部地方","近畿地方","中国地方","四国地方","九州地方"];
+var GEO_REGION_KANA = {
+  "北海道地方":"ほっかいどうちほう", "東北地方":"とうほくちほう",
+  "関東地方":"かんとうちほう", "中部地方":"ちゅうぶちほう",
+  "近畿地方":"きんきちほう", "中国地方":"ちゅうごくちほう",
+  "四国地方":"しこくちほう", "九州地方":"きゅうしゅうちほう"
+};
 
 /* ==================== 地図記号データ ==================== */
 function symGlyph(ch) { return '<span class="symGlyph">' + ch + '</span>'; }
@@ -679,36 +728,36 @@ function symSvg(inner) {
     'stroke-linecap="round" stroke-linejoin="round">' + inner + '</g></svg>';
 }
 var SYM_EASY = [
-  { name: "学校", html: symGlyph("文") },
-  { name: "郵便局", html: symGlyph("〒") },
-  { name: "神社", html: symSvg('<line x1="25" y1="20" x2="25" y2="90"/><line x1="75" y1="20" x2="75" y2="90"/>' +
+  { name: "学校", kana: "がっこう", html: symGlyph("文") },
+  { name: "郵便局", kana: "ゆうびんきょく", html: symGlyph("〒") },
+  { name: "神社", kana: "じんじゃ", html: symSvg('<line x1="25" y1="20" x2="25" y2="90"/><line x1="75" y1="20" x2="75" y2="90"/>' +
       '<line x1="10" y1="18" x2="90" y2="18"/><line x1="18" y1="34" x2="82" y2="34"/>') },
-  { name: "寺", html: symGlyph("卍") },
-  { name: "病院", html: symSvg('<line x1="50" y1="15" x2="50" y2="85" stroke-width="16"/>' +
+  { name: "寺", kana: "てら", html: symGlyph("卍") },
+  { name: "病院", kana: "びょういん", html: symSvg('<line x1="50" y1="15" x2="50" y2="85" stroke-width="16"/>' +
       '<line x1="15" y1="50" x2="85" y2="50" stroke-width="16"/>') },
-  { name: "交番", html: symSvg('<line x1="20" y1="20" x2="80" y2="80"/><line x1="80" y1="20" x2="20" y2="80"/>') },
-  { name: "温泉", html: symGlyph("♨") }
+  { name: "交番", kana: "こうばん", html: symSvg('<line x1="20" y1="20" x2="80" y2="80"/><line x1="80" y1="20" x2="20" y2="80"/>') },
+  { name: "温泉", kana: "おんせん", html: symGlyph("♨") }
 ];
 var SYM_MED = [
-  { name: "市役所", html: symSvg('<circle cx="50" cy="50" r="35"/><circle cx="50" cy="50" r="18"/>') },
-  { name: "町村役場", html: symSvg('<circle cx="50" cy="50" r="30"/>') },
-  { name: "工場", html: symSvg('<circle cx="50" cy="50" r="24"/>' +
+  { name: "市役所", kana: "しやくしょ", html: symSvg('<circle cx="50" cy="50" r="35"/><circle cx="50" cy="50" r="18"/>') },
+  { name: "町村役場", kana: "ちょうそんやくば", html: symSvg('<circle cx="50" cy="50" r="30"/>') },
+  { name: "工場", kana: "こうじょう", html: symSvg('<circle cx="50" cy="50" r="24"/>' +
       '<rect x="43" y="2" width="14" height="16" fill="#333" stroke="none"/>' +
       '<rect x="43" y="82" width="14" height="16" fill="#333" stroke="none"/>' +
       '<rect x="2" y="43" width="16" height="14" fill="#333" stroke="none"/>' +
       '<rect x="82" y="43" width="16" height="14" fill="#333" stroke="none"/>') },
-  { name: "警察署", html: symSvg('<circle cx="50" cy="50" r="32"/>' +
+  { name: "警察署", kana: "けいさつしょ", html: symSvg('<circle cx="50" cy="50" r="32"/>' +
       '<line x1="32" y1="32" x2="68" y2="68"/><line x1="68" y1="32" x2="32" y2="68"/>') },
-  { name: "図書館", html: symSvg('<path d="M15,30 L50,20 L85,30 L50,85 Z"/><line x1="50" y1="20" x2="50" y2="85"/>') },
-  { name: "果樹園", html: symSvg('<circle cx="50" cy="50" r="28"/>' +
+  { name: "図書館", kana: "としょかん", html: symSvg('<path d="M15,30 L50,20 L85,30 L50,85 Z"/><line x1="50" y1="20" x2="50" y2="85"/>') },
+  { name: "果樹園", kana: "かじゅえん", html: symSvg('<circle cx="50" cy="50" r="28"/>' +
       '<circle cx="50" cy="50" r="7" fill="#333" stroke="none"/>') }
 ];
 var SYM_HARD = [
-  { name: "田", html: symSvg('<line x1="30" y1="38" x2="70" y2="38" stroke-width="10"/>' +
+  { name: "田", kana: "た", html: symSvg('<line x1="30" y1="38" x2="70" y2="38" stroke-width="10"/>' +
       '<line x1="30" y1="62" x2="70" y2="62" stroke-width="10"/>') },
-  { name: "畑", html: symSvg('<line x1="35" y1="30" x2="50" y2="65" stroke-width="10"/>' +
+  { name: "畑", kana: "はたけ", html: symSvg('<line x1="35" y1="30" x2="50" y2="65" stroke-width="10"/>' +
       '<line x1="65" y1="30" x2="50" y2="65" stroke-width="10"/>') },
-  { name: "茶畑", html: symSvg('<circle cx="50" cy="25" r="8" fill="#333" stroke="none"/>' +
+  { name: "茶畑", kana: "ちゃばたけ", html: symSvg('<circle cx="50" cy="25" r="8" fill="#333" stroke="none"/>' +
       '<circle cx="30" cy="65" r="8" fill="#333" stroke="none"/>' +
       '<circle cx="70" cy="65" r="8" fill="#333" stroke="none"/>') }
 ];
@@ -717,8 +766,8 @@ var SYM_HARD = [
    [国めい, ヒントの文しょう] */
 var COUNTRY_EASY = [
   ["アメリカ","自由の女神ぞうや ディズニーランドで ゆうめいな 国だよ。"],
-  ["中国","パンダや 万里の長城で ゆうめいな、日本の となりの 大きな国だよ。"],
-  ["韓国","キムチや Kポップで ゆうめいな、日本の すぐ となりの 国だよ。"],
+  ["中国","パンダや 万里の長城で ゆうめいな、日本の となりの 大きな国だよ。","ちゅうごく"],
+  ["韓国","キムチや Kポップで ゆうめいな、日本の すぐ となりの 国だよ。","かんこく"],
   ["イギリス","赤い 2かいだてバスや 大きな 時計とう ビッグベンで ゆうめいな 国だよ。"],
   ["フランス","エッフェルとうや おいしい パンで ゆうめいな 国だよ。"],
   ["イタリア","ピザや パスタが うまれた、ながぐつの 形の 国だよ。"],
@@ -751,6 +800,36 @@ var COUNTRY_HARD = [
   ["アルゼンチン","サッカーが強く、南アメリカの 南のほうに ある 国だよ。"],
   ["フィンランド","サンタクロースの 村が ある、北ヨーロッパの 国だよ。"]
 ];
+
+/* ==================== ふりがな (ルビ) ====================
+   ちりモードの もんだい・こたえに よみがなを つける。
+   ヒントの文しょうは この じしょを つかって かんじの ぶぶんだけ ルビにする。 */
+var RUBY_DICT = {
+  "万里": "ばんり", "長城": "ちょうじょう", "熱帯雨林": "ねったいうりん",
+  "遊牧民": "ゆうぼくみん", "自由": "じゆう", "女神": "めがみ",
+  "日本": "にほん", "時計": "とけい", "人口": "じんこう", "面積": "めんせき",
+  "東南": "とうなん", "古代": "こだい", "細長": "ほそなが", "風車": "ふうしゃ",
+  "石油": "せきゆ", "草原": "そうげん", "中国": "ちゅうごく", "韓国": "かんこく",
+  "国": "くに", "大": "おお", "赤": "あか", "形": "かたち", "強": "つよ",
+  "多": "おお", "車": "くるま", "広": "ひろ", "北": "きた", "王": "おう",
+  "数": "かず", "見": "み", "美": "うつく", "山": "やま", "羊": "ひつじ",
+  "馬": "うま", "南": "みなみ", "入": "い", "江": "え", "村": "むら"
+};
+// ながい ことばを さきに マッチさせる (例: 風車 を 車 より さきに)
+var RUBY_RE = new RegExp(
+  Object.keys(RUBY_DICT).sort(function(a, b) { return b.length - a.length; }).join("|"), "g");
+
+/* ことば ぜんたいに ルビを ふる (よみが なければ そのまま) */
+function rubyHtml(text, kana) {
+  if (!kana) return text;
+  return "<ruby>" + text + "<rt>" + kana + "</rt></ruby>";
+}
+/* 文しょうの なかの かんじの ことばだけに ルビを ふる */
+function rubyText(text) {
+  return text.replace(RUBY_RE, function(m) {
+    return "<ruby>" + m + "<rt>" + RUBY_DICT[m] + "</rt></ruby>";
+  });
+}
 
 /* ==================== えいたんごデータ ====================
    [えいたんご, カタカナよみ, いみ, [まちがいのいみ1, 2, 3]] */
@@ -1270,12 +1349,15 @@ function makeRegionQuestion() {
   lastRegionPref = item[0];
   var correct = item[2];
   var wrongs = shuffle(GEO_REGIONS.filter(function(r) { return r !== correct; })).slice(0, 3);
+  var opts = shuffle([correct, wrongs[0], wrongs[1], wrongs[2]]);
   return {
     label: "何地方の とどうふけんかな?",
-    main: item[0],
-    big: item[0].length <= 4,
+    main: rubyHtml(item[0], item[3]),
+    mainHtml: true,
     answer: correct,
-    choices: shuffle([correct, wrongs[0], wrongs[1], wrongs[2]])
+    answerLabel: correct + " (" + GEO_REGION_KANA[correct] + ")",
+    choices: opts,
+    choicesHtml: opts.map(function(r) { return rubyHtml(r, GEO_REGION_KANA[r]); })
   };
 }
 
@@ -1289,15 +1371,17 @@ function makeSymbolQuestion() {
     symbolDeckTier = d;
   }
   var item = symbolDeck.pop();
-  var wrongs = shuffle(symbolPool.filter(function(e) { return e !== item; }))
-    .slice(0, 3).map(function(e) { return e.name; });
+  var others = shuffle(symbolPool.filter(function(e) { return e !== item; })).slice(0, 3);
+  var opts = shuffle([item].concat(others));
   return {
     label: "この ちずきごうは なに?",
     main: item.html,
     big: false,
     symbol: true,
     answer: item.name,
-    choices: shuffle([item.name, wrongs[0], wrongs[1], wrongs[2]])
+    answerLabel: item.name + " (" + item.kana + ")",
+    choices: opts.map(function(e) { return e.name; }),
+    choicesHtml: opts.map(function(e) { return rubyHtml(e.name, e.kana); })
   };
 }
 
@@ -1311,37 +1395,45 @@ function makeCountryQuestion() {
     countryDeckTier = d;
   }
   var item = countryDeck.pop();
-  var wrongs = shuffle(countryPool.filter(function(e) { return e !== item; }))
-    .slice(0, 3).map(function(e) { return e[0]; });
+  var others = shuffle(countryPool.filter(function(e) { return e !== item; })).slice(0, 3);
+  var opts = shuffle([item].concat(others));
   return {
     label: "この ヒントの 国は どこ?",
-    main: item[1],
+    main: rubyText(item[1]),
+    mainHtml: true,
     big: false,
     text: true,
+    rubyBlock: true,
     answer: item[0],
-    choices: shuffle([item[0], wrongs[0], wrongs[1], wrongs[2]])
+    answerLabel: item[2] ? item[0] + " (" + item[2] + ")" : item[0],
+    choices: opts.map(function(e) { return e[0]; }),
+    choicesHtml: opts.map(function(e) { return rubyHtml(e[0], e[2]); })
   };
 }
 
 function makePrefToCapitalQuestion(item) {
-  var wrongs = pickGeoDistractors(item, 1);
-  return {
-    label: "けんちょうしょざいちは どこ?",
-    main: item[0],
-    big: item[0].length <= 4,
-    answer: item[1],
-    choices: shuffle([item[1], wrongs[0], wrongs[1], wrongs[2]])
-  };
+  // field 1 = けんちょうしょざいち、よみは そのつぎ (index 4)
+  return makeGeoPairQuestion(item, 1, "けんちょうしょざいちは どこ?");
 }
 
 function makeCapitalToPrefQuestion(item) {
-  var wrongs = pickGeoDistractors(item, 0);
+  // field 0 = とどうふけん、よみは index 3
+  return makeGeoPairQuestion(item, 0, "どの とどうふけんの けんちょうしょざいちかな?");
+}
+
+/* とどうふけん⇔けんちょうしょざいち の もんだいを つくる。
+   field = こたえる ほうの index (0 か 1)。よみは field + 3 に ある。 */
+function makeGeoPairQuestion(item, field, label) {
+  var qField = field === 0 ? 1 : 0;   // もんだいに だす ほう
+  var opts = shuffle([item].concat(pickGeoDistractors(item, field)));
   return {
-    label: "どの とどうふけんの けんちょうしょざいちかな?",
-    main: item[1],
-    big: item[1].length <= 4,
-    answer: item[0],
-    choices: shuffle([item[0], wrongs[0], wrongs[1], wrongs[2]])
+    label: label,
+    main: rubyHtml(item[qField], item[qField + 3]),
+    mainHtml: true,
+    answer: item[field],
+    answerLabel: item[field] + " (" + item[field + 3] + ")",
+    choices: opts.map(function(e) { return e[field]; }),
+    choicesHtml: opts.map(function(e) { return rubyHtml(e[field], e[field + 3]); })
   };
 }
 
@@ -1355,7 +1447,7 @@ function pickGeoDistractors(item, field) {
   var target = item[field];
   var sameLen = others.filter(function(e) { return e[field].length === target.length; });
   var pool = sameLen.length >= 3 ? sameLen : others;
-  return shuffle(pool.slice()).slice(0, 3).map(function(e) { return e[field]; });
+  return shuffle(pool.slice()).slice(0, 3);
 }
 
 /* ==================== えいご ==================== */
@@ -1441,6 +1533,7 @@ function nextQuestion() {
   qm.classList.toggle("textQ", !!currentQ.text);
   qm.classList.toggle("symbolQ", !!currentQ.symbol);
   qm.classList.toggle("enQ", !!currentQ.enQ);
+  qm.classList.toggle("rubyBlock", !!currentQ.rubyBlock);
   if (currentQ.symbol || currentQ.mainHtml) {
     qm.innerHTML = currentQ.main;
   } else {
