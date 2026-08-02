@@ -73,6 +73,7 @@
   #btnKanji { background: linear-gradient(180deg, #7ee081, #2e9e46); }
   #btnGeo { background: linear-gradient(180deg, #4dd0e1, #00838f); }
   #btnEn { background: linear-gradient(180deg, #ffb74d, #ef6c00); }
+  #btnHist { background: linear-gradient(180deg, #e57373, #b71c1c); }
   .modeBtn small { display: block; font-size: 11px; font-weight: normal; margin-top: 2px; opacity: .95; }
   .bestScore { font-size: 12px; color: #ffe082; margin-top: 2px; }
   #btnResetScore {
@@ -362,6 +363,7 @@
     <button class="modeBtn" id="btnKanji">📖 かんじモード<small>かんじの よみかたで たたかう!</small><span class="bestScore" id="bestKanji"></span></button>
     <button class="modeBtn" id="btnGeo">🗾 ちりモード<small>とどうふけんと けんちょうしょざいちで たたかう!</small><span class="bestScore" id="bestGeo"></span></button>
     <button class="modeBtn" id="btnEn">🔤 えいごモード<small>えいたんごの いみで たたかう!</small><span class="bestScore" id="bestEn"></span></button>
+    <button class="modeBtn" id="btnHist">🏯 れきしモード<small>日本のれきしで たたかう!</small><span class="bestScore" id="bestHist"></span></button>
     <button id="btnResetScore">🗑 スコアを リセット</button>
   </div>
 
@@ -626,15 +628,17 @@ var KANJI_G4 = [
   ["節","ふし",["えだ","くき","みき"]],
   ["席","せき",["いす","つくえ","ゆか"]],
   ["管","くだ",["つつ","ぼう","ふえ"]],
-  ["泣く","なく",["わらう","さけぶ","なげく"]],
-  ["笑う","わらう",["なく","おこる","さわぐ"]],
-  ["働く","はたらく",["うごく","つとめる","あるく"]],
+  /* 送り仮名の ある ことばは、まちがいの よみも おなじ 送り仮名で おわらせる
+     (「飛ぶ」の こたえが 「〜ぶ」だけ だと、かんじを 見なくても わかってしまう) */
+  ["泣く","なく",["あるく","うごく","なげく"]],
+  ["笑う","わらう",["うたう","おもう","むかう"]],
+  ["働く","はたらく",["うごく","あるく","ひらく"]],
   ["折る","おる",["きる","わる","まげる"]],
   ["選ぶ","えらぶ",["ならぶ","はこぶ","むすぶ"]],
   ["戦う","たたかう",["きそう","あらそう","むかう"]],
-  ["飛ぶ","とぶ",["はねる","まう","かける"]],
-  ["祝う","いわう",["ねがう","うたう","おがむ"]],
-  ["願う","ねがう",["いわう","いのる","おもう"]],
+  ["飛ぶ","とぶ",["ならぶ","はこぶ","あそぶ"]],
+  ["祝う","いわう",["ねがう","うたう","わらう"]],
+  ["願う","ねがう",["いわう","おもう","むかう"]],
   ["続く","つづく",["とどく","うごく","ひびく"]],
   ["残る","のこる",["とまる","もどる","こまる"]],
   ["借りる","かりる",["おりる","たりる","こりる"]],
@@ -801,6 +805,84 @@ var COUNTRY_HARD = [
   ["フィンランド","サンタクロースの 村が ある、北ヨーロッパの 国だよ。"]
 ];
 
+/* ==================== 日本史データ ====================
+   じだいは 古い じゅんに ならべる (「いちばん 古い/あたらしい じだい」の もんだいに つかう) */
+var ERAS = [
+  ["縄文時代","じょうもんじだい"], ["弥生時代","やよいじだい"], ["古墳時代","こふんじだい"],
+  ["飛鳥時代","あすかじだい"], ["奈良時代","ならじだい"], ["平安時代","へいあんじだい"],
+  ["鎌倉時代","かまくらじだい"], ["室町時代","むろまちじだい"], ["安土桃山時代","あづちももやまじだい"],
+  ["江戸時代","えどじだい"], ["明治時代","めいじじだい"], ["大正時代","たいしょうじだい"],
+  ["昭和時代","しょうわじだい"]
+];
+var ERA_KANA = {};
+var ERA_ORDER = {};
+ERAS.forEach(function(e, i) { ERA_KANA[e[0]] = e[1]; ERA_ORDER[e[0]] = i; });
+
+/* [人ぶつ, なまえのよみ, じだい, ヒント] */
+var HIST_EASY = [
+  ["聖徳太子","しょうとくたいし","飛鳥時代","十七条の憲法を つくり、法隆寺を たてた 人だよ。"],
+  ["聖武天皇","しょうむてんのう","奈良時代","東大寺に 大仏を つくらせた 天皇だよ。"],
+  ["紫式部","むらさきしきぶ","平安時代","「源氏物語」を 書いた 人だよ。"],
+  ["源頼朝","みなもとのよりとも","鎌倉時代","鎌倉に 幕府を ひらいた 武士だよ。"],
+  ["足利義満","あしかがよしみつ","室町時代","京都に 金閣を たてた 将軍だよ。"],
+  ["織田信長","おだのぶなが","安土桃山時代","長篠の戦いで 鉄砲を つかい、安土城を たてた 武将だよ。"],
+  ["豊臣秀吉","とよとみひでよし","安土桃山時代","刀狩や 検地を おこない、天下統一を なしとげた 武将だよ。"],
+  ["徳川家康","とくがわいえやす","江戸時代","関ヶ原の戦いに かち、江戸に 幕府を ひらいた 武将だよ。"],
+  ["卑弥呼","ひみこ","弥生時代","邪馬台国を おさめた 女王だよ。"],
+  ["福沢諭吉","ふくざわゆきち","明治時代","「学問のすゝめ」を 書いた 人だよ。"]
+];
+var HIST_MED = [
+  ["中大兄皇子","なかのおおえのおうじ","飛鳥時代","大化の改新を すすめ、のちに 天智天皇に なった 人だよ。"],
+  ["鑑真","がんじん","奈良時代","中国から 日本に わたり、仏教を つたえた おぼうさんだよ。"],
+  ["藤原道長","ふじわらのみちなが","平安時代","むすめを 天皇の きさきに して、大きな 力を もった 貴族だよ。"],
+  ["清少納言","せいしょうなごん","平安時代","「枕草子」を 書いた 人だよ。"],
+  ["平清盛","たいらのきよもり","平安時代","武士で はじめて 太政大臣に なった 人だよ。"],
+  ["北条時宗","ほうじょうときむね","鎌倉時代","元の 大軍が せめてきた とき、幕府を まとめて たたかった 人だよ。"],
+  ["足利義政","あしかがよしまさ","室町時代","京都に 銀閣を たてた 将軍だよ。"],
+  ["雪舟","せっしゅう","室町時代","すみで えがく 水墨画で 有名な 人だよ。"],
+  ["徳川家光","とくがわいえみつ","江戸時代","参勤交代の しくみを ととのえ、鎖国を おこなった 将軍だよ。"],
+  ["伊藤博文","いとうひろぶみ","明治時代","日本で はじめての 内閣総理大臣に なった 人だよ。"]
+];
+var HIST_HARD = [
+  ["杉田玄白","すぎたげんぱく","江戸時代","オランダの 医学書を ほんやくして 「解体新書」を 出した 人だよ。"],
+  ["伊能忠敬","いのうただたか","江戸時代","全国を 歩いて はかり、くわしい 日本地図を つくった 人だよ。"],
+  ["本居宣長","もとおりのりなが","江戸時代","「古事記伝」を 書き、国学を 大成した 人だよ。"],
+  ["歌川広重","うたがわひろしげ","江戸時代","「東海道五十三次」の 浮世絵で 有名な 人だよ。"],
+  ["葛飾北斎","かつしかほくさい","江戸時代","「富嶽三十六景」の 浮世絵で 有名な 人だよ。"],
+  ["ペリー","","江戸時代","黒船で やって来て、日本に 開国を もとめた アメリカの 人だよ。"],
+  ["西郷隆盛","さいごうたかもり","明治時代","明治維新で 活やくした 人だよ。"],
+  ["大久保利通","おおくぼとしみち","明治時代","明治政府の 中心と なって 改革を すすめた 人だよ。"],
+  ["坂本龍馬","さかもとりょうま","江戸時代","薩摩と 長州を むすびつける ことに つとめた 人だよ。"],
+  ["野口英世","のぐちひでよ","明治時代","細菌の 研究で せかいに 知られた 医学者だよ。"]
+];
+
+/* [できごと, じだい] */
+var HIST_EVENT_EASY = [
+  ["東大寺の 大仏が つくられた","奈良時代"],
+  ["平安京に 都を うつした","平安時代"],
+  ["鎌倉に 幕府が ひらかれた","鎌倉時代"],
+  ["江戸に 幕府が ひらかれた","江戸時代"],
+  ["ペリーが 黒船で やって来た","江戸時代"],
+  ["明治維新が おこった","明治時代"]
+];
+var HIST_EVENT_MED = [
+  ["十七条の憲法が つくられた","飛鳥時代"],
+  ["大化の改新が おこなわれた","飛鳥時代"],
+  ["源氏物語が 書かれた","平安時代"],
+  ["元の 大軍が せめてきた","鎌倉時代"],
+  ["金閣が たてられた","室町時代"],
+  ["参勤交代が はじまった","江戸時代"],
+  ["鎖国が おこなわれた","江戸時代"]
+];
+var HIST_EVENT_HARD = [
+  ["応仁の乱が おこった","室町時代"],
+  ["銀閣が たてられた","室町時代"],
+  ["刀狩が おこなわれた","安土桃山時代"],
+  ["大日本帝国憲法が できた","明治時代"],
+  ["太平洋戦争が おわった","昭和時代"],
+  ["東京オリンピックが ひらかれた","昭和時代"]
+];
+
 /* ==================== ふりがな (ルビ) ====================
    ちりモードの もんだい・こたえに よみがなを つける。
    ヒントの文しょうは この じしょを つかって かんじの ぶぶんだけ ルビにする。 */
@@ -813,7 +895,32 @@ var RUBY_DICT = {
   "国": "くに", "大": "おお", "赤": "あか", "形": "かたち", "強": "つよ",
   "多": "おお", "車": "くるま", "広": "ひろ", "北": "きた", "王": "おう",
   "数": "かず", "見": "み", "美": "うつく", "山": "やま", "羊": "ひつじ",
-  "馬": "うま", "南": "みなみ", "入": "い", "江": "え", "村": "むら"
+  "馬": "うま", "南": "みなみ", "入": "い", "江": "え", "村": "むら",
+  /* ---- 日本史 ---- */
+  "十七条": "じゅうしちじょう", "憲法": "けんぽう", "法隆寺": "ほうりゅうじ",
+  "東大寺": "とうだいじ", "大仏": "だいぶつ", "天皇": "てんのう",
+  "源氏物語": "げんじものがたり", "書": "か", "鎌倉": "かまくら", "幕府": "ばくふ",
+  "武士": "ぶし", "京都": "きょうと", "金閣": "きんかく", "銀閣": "ぎんかく",
+  "将軍": "しょうぐん", "長篠": "ながしの", "戦": "たたか", "鉄砲": "てっぽう",
+  "安土城": "あづちじょう", "武将": "ぶしょう", "刀狩": "かたながり", "検地": "けんち",
+  "天下統一": "てんかとういつ", "関ヶ原": "せきがはら", "江戸": "えど",
+  "邪馬台国": "やまたいこく", "女王": "じょおう", "学問": "がくもん",
+  "大化": "たいか", "改新": "かいしん", "天智天皇": "てんじてんのう",
+  "仏教": "ぶっきょう", "力": "ちから", "貴族": "きぞく", "枕草子": "まくらのそうし",
+  "太政大臣": "だじょうだいじん", "元": "げん", "大軍": "たいぐん",
+  "水墨画": "すいぼくが", "有名": "ゆうめい", "参勤交代": "さんきんこうたい",
+  "鎖国": "さこく", "内閣総理大臣": "ないかくそうりだいじん",
+  "医学書": "いがくしょ", "解体新書": "かいたいしんしょ", "出": "だ",
+  "全国": "ぜんこく", "歩": "ある", "地図": "ちず", "古事記伝": "こじきでん",
+  "国学": "こくがく", "大成": "たいせい", "東海道五十三次": "とうかいどうごじゅうさんつぎ",
+  "浮世絵": "うきよえ", "富嶽三十六景": "ふがくさんじゅうろっけい",
+  "黒船": "くろふね", "来": "き", "開国": "かいこく", "明治維新": "めいじいしん",
+  "活": "かつ", "明治政府": "めいじせいふ", "中心": "ちゅうしん", "改革": "かいかく",
+  "薩摩": "さつま", "長州": "ちょうしゅう", "細菌": "さいきん", "研究": "けんきゅう",
+  "知": "し", "医学者": "いがくしゃ", "平安京": "へいあんきょう", "都": "みやこ",
+  "人": "ひと",  /* 人口(じんこう) は ながい キーが さきに マッチする */
+  "応仁": "おうにん", "乱": "らん", "大日本帝国憲法": "だいにほんていこくけんぽう",
+  "太平洋戦争": "たいへいようせんそう", "東京": "とうきょう"
 };
 // ながい ことばを さきに マッチさせる (例: 風車 を 車 より さきに)
 var RUBY_RE = new RegExp(
@@ -944,7 +1051,8 @@ var MODES = {
   div:   { label: "わり算",  storageKey: "bb_best_div" },
   kanji: { label: "かんじ",  storageKey: "bb_best_kanji" },
   geo:   { label: "ちり",    storageKey: "bb_best_geo" },
-  en:    { label: "えいご",  storageKey: "bb_best_en" }
+  en:    { label: "えいご",  storageKey: "bb_best_en" },
+  hist:  { label: "れきし",  storageKey: "bb_best_hist" }
 };
 var state = {};
 var kanjiDeck = [];
@@ -962,6 +1070,12 @@ var countryDeckTier = -1;
 var enDeck = [];
 var enPool = [];
 var enDeckTier = -1;
+var histDeck = [];
+var histPool = [];
+var histDeckTier = -1;
+var histEventDeck = [];
+var histEventPool = [];
+var histEventDeckTier = -1;
 var busy = false;
 
 /* レベル15の モンスターを たおしたら ゲームクリア */
@@ -985,7 +1099,6 @@ function shuffle(arr) {
   return arr;
 }
 function rand(n) { return Math.floor(Math.random() * n); }
-function hasOkurigana(s) { return /[぀-ゟ]/.test(s); }
 
 function getBest(mode) {
   try { return parseInt(localStorage.getItem(MODES[mode].storageKey) || "0", 10) || 0; }
@@ -1006,10 +1119,12 @@ function showTitle() {
   b = getBest("kanji"); $("bestKanji").textContent = b ? "さいこう " + b + " てん" : "";
   b = getBest("geo");   $("bestGeo").textContent   = b ? "さいこう " + b + " てん" : "";
   b = getBest("en");    $("bestEn").textContent    = b ? "さいこう " + b + " てん" : "";
+  b = getBest("hist");  $("bestHist").textContent  = b ? "さいこう " + b + " てん" : "";
   // スコアが なにも ないときは リセットボタンを かくす
   disarmResetBtn();
-  $("btnResetScore").style.display =
-    (getBest("mul") || getBest("div") || getBest("kanji") || getBest("geo") || getBest("en")) ? "block" : "none";
+  var anyBest = false;
+  for (var k in MODES) { if (getBest(k)) anyBest = true; }
+  $("btnResetScore").style.display = anyBest ? "block" : "none";
 }
 
 /* スコアリセット (まちがえて おさないように 2かい おして かくてい) */
@@ -1031,11 +1146,7 @@ function onResetScore() {
     return;
   }
   try {
-    localStorage.removeItem(MODES.mul.storageKey);
-    localStorage.removeItem(MODES.div.storageKey);
-    localStorage.removeItem(MODES.kanji.storageKey);
-    localStorage.removeItem(MODES.geo.storageKey);
-    localStorage.removeItem(MODES.en.storageKey);
+    for (var k in MODES) localStorage.removeItem(MODES[k].storageKey);
   } catch (e) {}
   showTitle();
 }
@@ -1066,6 +1177,10 @@ function startGame(mode) {
   lastRegionPref = "";
   enDeck = [];
   enDeckTier = -1;
+  histDeck = [];
+  histDeckTier = -1;
+  histEventDeck = [];
+  histEventDeckTier = -1;
   $("titleScreen").style.display = "none";
   $("gameScreen").style.display = "flex";
   $("overlay").style.display = "none";
@@ -1146,6 +1261,7 @@ function makeQuestion() {
   if (state.mode === "div") return makeDivQuestion();
   if (state.mode === "geo") return makeGeoQuestion();
   if (state.mode === "en") return makeEnglishQuestion();
+  if (state.mode === "hist") return makeHistoryQuestion();
   return makeKanjiQuestion();
 }
 
@@ -1278,8 +1394,12 @@ function makeKanjiQuestion() {
     kanjiDeckTier = d;
   }
   var item = kanjiDeck.pop();
-  // よみ→かんじ の ぎゃくもんだいも 半分の かくりつで だす
-  if (rand(2) === 0) return makeReadingToKanjiQuestion(item);
+  // よみ→かんじ の ぎゃくもんだいも 半分の かくりつで だす。
+  // ただし 送り仮名が そろわず もんだいに ならない ときは かんじ→よみ に する。
+  if (rand(2) === 0) {
+    var rev = makeReadingToKanjiQuestion(item);
+    if (rev) return rev;
+  }
   return {
     label: "この かんじの よみかたは?",
     main: item[0],
@@ -1289,15 +1409,23 @@ function makeKanjiQuestion() {
   };
 }
 
+/* ことばの おわりの ひらがな (送り仮名)。かんじだけの ことばは "" */
+function okurigana(word) {
+  var m = word.match(/[ぁ-ゟ]+$/);
+  return m ? m[0] : "";
+}
+
 function makeReadingToKanjiQuestion(item) {
   // まちがい候補は おなじプールの べつの かんじから えらぶ。
   // おなじ よみの かんじ (例: 街/町 = まち) は 正解が 2つに なるので のぞく。
-  // 送り仮名の あり・なしは まぜない (例: 「おる」の こたえに 送り仮名なしの
-  // かんじが まざると 見た目で こたえが わかってしまう)。
-  var itemHasOku = hasOkurigana(item[0]);
+  // 送り仮名は ぴったり おなじ ものだけ にする。「とぶ」の せんたくしに
+  // 「飛ぶ」しか 〜ぶ が ない と、かんじを 見なくても こたえが わかってしまう。
+  var oku = okurigana(item[0]);
   var others = kanjiPool.filter(function(e) {
-    return e[0] !== item[0] && e[1] !== item[1] && hasOkurigana(e[0]) === itemHasOku;
+    return e[0] !== item[0] && e[1] !== item[1] && okurigana(e[0]) === oku;
   });
+  // おなじ 送り仮名の なかまが 3つ そろわない ときは このもんだいは 作らない
+  if (others.length < 3) return null;
   // 文字数が おなじものを ゆうせん (見た目で わからないように)
   var sameLen = others.filter(function(e) { return e[0].length === item[0].length; });
   var pool = sameLen.length >= 3 ? sameLen : others;
@@ -1522,6 +1650,108 @@ function makeMeaningToEnQuestion(item) {
   };
 }
 
+/* ==================== 日本史 ==================== */
+function ensureHistPools() {
+  var d = difficulty();
+  if (histDeck.length === 0 || histDeckTier !== d) {
+    histPool = d === 2 ? HIST_MED.concat(HIST_HARD) :
+               d === 1 ? HIST_MED.slice() :
+                         HIST_EASY.slice();
+    histDeck = shuffle(histPool.slice());
+    histDeckTier = d;
+  }
+  if (histEventDeck.length === 0 || histEventDeckTier !== d) {
+    histEventPool = d === 2 ? HIST_EVENT_MED.concat(HIST_EVENT_HARD) :
+                    d === 1 ? HIST_EVENT_MED.slice() :
+                              HIST_EVENT_EASY.slice();
+    histEventDeck = shuffle(histEventPool.slice());
+    histEventDeckTier = d;
+  }
+}
+
+function makeHistoryQuestion() {
+  ensureHistPools();
+  var roll = rand(100);
+  if (roll < 40) return makeHistPersonQuestion();   // ヒント → 人ぶつ
+  if (roll < 65) return makeHistPersonEraQuestion(); // 人ぶつ → じだい
+  if (roll < 88) return makeHistEventQuestion();     // できごと → じだい
+  return makeEraOrderQuestion();                     // じだいの じゅんばん
+}
+
+/* ヒントの せつめいから 人ぶつを あてる */
+function makeHistPersonQuestion() {
+  var item = histDeck.pop();
+  var others = shuffle(histPool.filter(function(e) { return e !== item; })).slice(0, 3);
+  var opts = shuffle([item].concat(others));
+  return {
+    label: "この せつめいの ひとは だれ?",
+    main: rubyText(item[3]),
+    mainHtml: true,
+    text: true,
+    rubyBlock: true,
+    answer: item[0],
+    answerLabel: item[1] ? item[0] + " (" + item[1] + ")" : item[0],
+    choices: opts.map(function(e) { return e[0]; }),
+    choicesHtml: opts.map(function(e) { return rubyHtml(e[0], e[1]); })
+  };
+}
+
+/* 人ぶつが かつやくした じだいを あてる */
+function makeHistPersonEraQuestion() {
+  var item = histPool[rand(histPool.length)];
+  return eraChoiceQuestion(
+    "この ひとが かつやくした じだいは?",
+    rubyHtml(item[0], item[1]),
+    item[2]
+  );
+}
+
+/* できごとの じだいを あてる */
+function makeHistEventQuestion() {
+  var item = histEventDeck.pop();
+  return eraChoiceQuestion(
+    "この できごとは いつの じだい?",
+    rubyText(item[0]),
+    item[1],
+    true
+  );
+}
+
+/* じだいを 4たくで えらばせる もんだいを つくる */
+function eraChoiceQuestion(label, mainHtml, correctEra, isText) {
+  var wrongs = shuffle(ERAS.filter(function(e) { return e[0] !== correctEra; }))
+    .slice(0, 3).map(function(e) { return e[0]; });
+  var opts = shuffle([correctEra, wrongs[0], wrongs[1], wrongs[2]]);
+  return {
+    label: label,
+    main: mainHtml,
+    mainHtml: true,
+    text: !!isText,
+    rubyBlock: !!isText,
+    answer: correctEra,
+    answerLabel: correctEra + " (" + ERA_KANA[correctEra] + ")",
+    choices: opts,
+    choicesHtml: opts.map(function(e) { return rubyHtml(e, ERA_KANA[e]); })
+  };
+}
+
+/* 4つの じだいから いちばん 古い/あたらしい ものを えらぶ */
+function makeEraOrderQuestion() {
+  var picked = shuffle(ERAS.slice()).slice(0, 4);
+  var oldest = rand(2) === 0;
+  var sorted = picked.slice().sort(function(a, b) { return ERA_ORDER[a[0]] - ERA_ORDER[b[0]]; });
+  var correct = (oldest ? sorted[0] : sorted[3])[0];
+  var opts = shuffle(picked.map(function(e) { return e[0]; }));
+  return {
+    label: oldest ? "いちばん ふるい じだいは どれ?" : "いちばん あたらしい じだいは どれ?",
+    main: oldest ? "⏳" : "⏩",
+    answer: correct,
+    answerLabel: correct + " (" + ERA_KANA[correct] + ")",
+    choices: opts,
+    choicesHtml: opts.map(function(e) { return rubyHtml(e, ERA_KANA[e]); })
+  };
+}
+
 /* ==================== しゅつだい・かいとう ==================== */
 var currentQ = null;
 
@@ -1727,6 +1957,7 @@ $("btnDiv").addEventListener("click", function() { startGame("div"); });
 $("btnKanji").addEventListener("click", function() { startGame("kanji"); });
 $("btnGeo").addEventListener("click", function() { startGame("geo"); });
 $("btnEn").addEventListener("click", function() { startGame("en"); });
+$("btnHist").addEventListener("click", function() { startGame("hist"); });
 choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
