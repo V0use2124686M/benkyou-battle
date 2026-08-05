@@ -1254,7 +1254,7 @@ function spawnMonster() {
 
   $("monsterName").textContent = mon.name;
 
-  // がぞうがあれば つかう (monster01.png など)。なければ えもじ。
+  // がぞうがあれば つかう (monster01.webp など)。なければ えもじ。
   var img = $("monsterImg");
   var emo = $("monsterEmoji");
   emo.textContent = mon.emoji;
@@ -1263,7 +1263,7 @@ function spawnMonster() {
   img.onload = function() { img.style.display = "block"; emo.style.display = "none"; };
   img.onerror = function() { img.style.display = "none"; emo.style.display = "block"; };
   var n = idx + 1;
-  img.src = "monster" + (n < 10 ? "0" + n : n) + ".png";
+  img.src = "monster" + (n < 10 ? "0" + n : n) + ".webp";
 
   var box = $("monsterBox");
   box.classList.remove("defeated", "shake", "attack", "appear");
