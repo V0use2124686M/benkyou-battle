@@ -91,6 +91,47 @@
   #btnResetScore:active { transform: translateY(2px); }
   #btnResetScore.arm { background: #d32f2f; border-color: #fff; animation: comboPop .3s; }
 
+  /* ===== むずかしさ えらび ===== */
+  #diffScreen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+  }
+  .diffTitle { font-size: 26px; font-weight: bold; text-shadow: 2px 2px 0 #1a0f3d; }
+  .diffBtn { padding: 16px 12px; font-size: 22px; }
+  .diffBtn small { font-size: 12px; margin-top: 4px; }
+  #btnEasy { background: linear-gradient(180deg, #7ee081, #2e9e46); }
+  #btnHard { background: linear-gradient(180deg, #ff7043, #c62828); }
+  #btnDiffBack {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255,255,255,.15);
+    border: 2px solid rgba(255,255,255,.6);
+    border-radius: 10px;
+    padding: 8px 22px;
+    cursor: pointer;
+  }
+  #btnDiffBack:active { transform: translateY(2px); }
+  #hardBadge {
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #c62828;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    padding: 1px 6px;
+    display: none;
+    z-index: 4;
+  }
+
   /* ===== ゲームがめん ===== */
   #gameScreen { flex: 1; display: none; flex-direction: column; gap: 6px; min-height: 0; }
 
@@ -265,6 +306,17 @@
   #choices.oneCol .choiceBtn { font-size: 19px; min-height: 46px; padding: 6px 10px; }
   .placeTag { font-size: 14px; margin-left: 2px; }
   .placeTag rt { font-size: 55%; }
+  /* 文の もんだい (同じ よみの ことば・四字熟語の いみ・世界の首都) */
+  #questionMain.sentenceQ { font-size: 22px; line-height: 1.6; }
+  #questionMain.sentenceQ rt { font-size: 50%; }
+  .blank { color: #d84315; border-bottom: 3px solid #d84315; padding: 0 3px; }
+  /* えいごの あなうめ */
+  .fillEn { font-size: 22px; font-weight: bold; line-height: 1.4; }
+  .fillJa { font-size: 14px; color: #7b5e00; margin-top: 2px; font-weight: bold; line-height: 1.9; }
+  #questionMain .fillJa rt { font-size: 55%; }
+  .enSpell { font-size: 21px; }
+  /* 四字熟語の いみ など ながい せんたくし */
+  #choices.smallText .choiceBtn { font-size: 15px; line-height: 1.3; min-height: 44px; padding: 6px 8px; }
 
   /* メッセージ */
   #message {
@@ -372,6 +424,15 @@
     <button id="btnResetScore">🗑 スコアを リセット</button>
   </div>
 
+  <!-- むずかしさ えらび (かんじ・ちり・えいご) -->
+  <div id="diffScreen">
+    <div class="diffTitle" id="diffTitle"></div>
+    <div style="font-size:14px;">むずかしさを えらんでね</div>
+    <button class="modeBtn diffBtn" id="btnEasy">😊 かんたん<small>いままでの もんだい</small><span class="bestScore" id="bestEasy"></span></button>
+    <button class="modeBtn diffBtn" id="btnHard">🔥 むずかしい<small id="hardDesc"></small><span class="bestScore" id="bestHard"></span></button>
+    <button id="btnDiffBack">もどる</button>
+  </div>
+
   <!-- バトル -->
   <div id="gameScreen">
     <div id="topBar">
@@ -389,6 +450,7 @@
       </div>
       <div class="hpBarOuter"><div class="hpBarInner" id="monsterHpBar"></div></div>
       <div id="winBanner"></div>
+      <div id="hardBadge">むずかしい</div>
     </div>
 
     <div id="playerArea">
@@ -743,6 +805,251 @@ var KANJI_LIKE = {
   "伝":"仏位", "土":"士上", "小":"少"
 };
 
+/* ==================== かんじ むずかしいモード ====================
+   小5・小6 の かんじ。かたちは KANJI_G2 などと おなじ。
+   まちがいの よみは「ありそうな よみ」(のばす音・にごる音・べつの 音よみ 等) にして、
+   その ことばの じっさいの よみ (筋肉=すじにく 等) は 入れない */
+var KANJI_G5 = [
+  ["輸出","ゆしゅつ",["ゆうしゅつ","ゆしゅう","しゅしゅつ"]],
+  ["貿易","ぼうえき",["ぼうい","ぼえき","ぼうやく"]],
+  ["圧力","あつりょく",["あつりき","おうりょく","あつりょう"]],
+  ["永久","えいきゅう",["えいく","えきゅう","ながきゅう"]],
+  ["液体","えきたい",["えきてい","えったい","えきだい"]],
+  ["演技","えんぎ",["えんき","えんぎょう","えいぎ"]],
+  ["価格","かかく",["かこう","けかく","かがく"]],
+  ["確実","かくじつ",["かくみ","かくじち","かじつ"]],
+  ["金額","きんがく",["きんかく","きんがき","かねがく"]],
+  ["規則","きそく",["きぞく","きしょく","のりそく"]],
+  ["技術","ぎじゅつ",["ぎしゅつ","きじゅつ","ぎじゅう"]],
+  ["逆転","ぎゃくてん",["さかてん","ぎゃっこてん","ぎゃくでん"]],
+  ["禁止","きんし",["きんじ","こんし","きんどめ"]],
+  ["経験","けいけん",["きょうけん","けいげん","へけん"]],
+  ["検査","けんさ",["けんしゃ","けんざ","けさ"]],
+  ["限界","げんかい",["けんかい","げんがい","かぎかい"]],
+  ["減少","げんしょう",["へんしょう","げんしょ","けんしょう"]],
+  ["個人","こじん",["こにん","こうじん","かじん"]],
+  ["効果","こうか",["こうが","ききか","こか"]],
+  ["構造","こうぞう",["こうそう","かまぞう","こうざい"]],
+  ["混雑","こんざつ",["こんさつ","まざつ","こんぞう"]],
+  ["災害","さいがい",["さいかい","わざがい","さいけい"]],
+  ["財産","ざいさん",["さいさん","ざいざん","たからさん"]],
+  ["賛成","さんせい",["さんじょう","さんなり","さんぜい"]],
+  ["歴史","れきし",["れきじ","りゃくし","れきふみ"]],
+  ["飼育","しいく",["かいいく","しそだ","しいき"]],
+  ["品質","ひんしつ",["ひんじつ","しなしつ","ひんしち"]],
+  ["授業","じゅぎょう",["じゅごう","じゅうぎょう","さずぎょう"]],
+  ["修理","しゅうり",["しゅり","しゅうりょ","おさり"]],
+  ["準備","じゅんび",["じゅんぴ","じゅんそな","しゅんび"]],
+  ["招待","しょうたい",["しょうだい","まねたい","しょたい"]],
+  ["証明","しょうめい",["しょうみょう","せいめい","しょめい"]],
+  ["賞状","しょうじょう",["しょうぞう","しょじょう","しょうしょう"]],
+  ["職業","しょくぎょう",["しょくごう","しきぎょう","しょぎょう"]],
+  ["政治","せいじ",["せいち","まつりじ","しょうじ"]],
+  ["製品","せいひん",["せいしな","せいびん","せひん"]],
+  ["責任","せきにん",["せきじん","せめにん","せきにい"]],
+  ["設計","せっけい",["せつけい","せっかい","しつけい"]],
+  ["祖先","そせん",["そうせん","そさき","そぜん"]],
+  ["測定","そくてい",["そくじょう","はかてい","そっけい"]],
+  ["団結","だんけつ",["だんけい","たんけつ","だんゆい"]],
+  ["貯金","ちょきん",["ちょうきん","ちょこん","ちょかね"]],
+  ["提出","ていしゅつ",["だいしゅつ","ていしゅ","ていすい"]],
+  ["適切","てきせつ",["てきさい","てっせつ","てきぎり"]],
+  ["統一","とういつ",["とういち","とんいつ","とおいつ"]],
+  ["独立","どくりつ",["どくたち","とくりつ","どくりゅう"]],
+  ["燃料","ねんりょう",["もえりょう","ねんりょ","ぜんりょう"]],
+  ["能力","のうりょく",["のうりき","のりょく","よくりょく"]],
+  ["判断","はんだん",["ばんだん","はんたん","はんことわ"]],
+  ["肥料","ひりょう",["こえりょう","ひりょ","びりょう"]],
+  ["非常","ひじょう",["ひつね","ひしょう","ひじょ"]],
+  ["備える","そなえる",["そろえる","ささえる","くわえる"]],
+  ["迷う","まよう",["まどう","さそう","ためらう"]],
+  ["断る","ことわる",["こたわる","ことはる","たちわる"]],
+  ["謝る","あやまる",["あらたまる","あやつる","いやまる"]],
+  ["許す","ゆるす",["ゆらす","ゆるがす","ゆわす"]],
+  ["険しい","けわしい",["けわらしい","いかめしい","はげしい"]],
+  ["快い","こころよい",["ここちよい","こころいい","かいよい"]]
+];
+var KANJI_G6 = [
+  ["胃腸","いちょう",["いちょ","いはら","いじょう"]],
+  ["遺産","いさん",["ゆいさん","いざん","のこさん"]],
+  ["地域","ちいき",["じいき","ちいけ","ちいく"]],
+  ["宇宙","うちゅう",["うちょう","うじゅう","いえちゅう"]],
+  ["映画","えいが",["えいかく","えいかい","うつが"]],
+  ["延長","えんちょう",["えんなが","えいちょう","えんじょう"]],
+  ["沿岸","えんがん",["えんぎし","そいがん","えんかん"]],
+  ["拡大","かくだい",["こうだい","かくたい","ひろだい"]],
+  ["内閣","ないかく",["うちかく","ないがく","だいかく"]],
+  ["看護","かんご",["かんごう","みご","かんぐ"]],
+  ["簡単","かんたん",["かんだん","けんたん","かんたい"]],
+  ["危険","きけん",["きげん","あぶけん","ぎけん"]],
+  ["貴重","きちょう",["きじゅう","たかちょう","きおも"]],
+  ["呼吸","こきゅう",["こすう","よびきゅう","こうきゅう"]],
+  ["郷土","きょうど",["ごうど","きょうと","さとつち"]],
+  ["筋肉","きんにく",["きんじく","こんにく","きんにき"]],
+  ["警察","けいさつ",["けいざつ","きょうさつ","けさつ"]],
+  ["劇場","げきじょう",["げきば","ごくじょう","げきしょう"]],
+  ["憲法","けんぽう",["けんほう","けんぼう","けんぽ"]],
+  ["権利","けんり",["ごんり","けんりき","かんり"]],
+  ["誤解","ごかい",["ごげ","あやかい","ごけ"]],
+  ["皇居","こうきょ",["おうきょ","こうい","こうこ"]],
+  ["降水","こうすい",["ふりすい","ごうすい","こうみず"]],
+  ["穀物","こくもつ",["こくぶつ","こもつ","こくもの"]],
+  ["砂糖","さとう",["すなとう","しゃとう","さどう"]],
+  ["裁判","さいばん",["さいはん","さばん","たちばん"]],
+  ["磁石","じしゃく",["じせき","じいし","ししゃく"]],
+  ["若者","わかもの",["じゃくしゃ","わかしゃ","にゃくもの"]],
+  ["縦断","じゅうだん",["たてだん","しょうだん","じゅうたん"]],
+  ["処理","しょり",["しょうり","ところり","しょじ"]],
+  ["将来","しょうらい",["しょらい","しょうくる","そうらい"]],
+  ["障害","しょうがい",["しょうかい","さわがい","しょがい"]],
+  ["蒸気","じょうき",["むしき","しょうき","じょうけ"]],
+  ["垂直","すいちょく",["すいじき","たれちょく","ずいちょく"]],
+  ["専門","せんもん",["せんかど","せいもん","ぜんもん"]],
+  ["創造","そうぞう",["そうそう","そうざい","つくぞう"]],
+  ["存在","そんざい",["ぞんざい","そんさい","ぞんざ"]],
+  ["誕生","たんじょう",["たんせい","だんじょう","たんしょう"]],
+  ["値段","ねだん",["ちだん","あたいだん","ねたん"]],
+  ["頂上","ちょうじょう",["ちょうがみ","いただきじょう","ちょうしょう"]],
+  ["討論","とうろん",["とろん","うちろん","とうりん"]],
+  ["秘密","ひみつ",["ひめみつ","ひみち","びみつ"]],
+  ["宝石","ほうせき",["たからいし","ほうしゃく","ほせき"]],
+  ["訪問","ほうもん",["おとずもん","ほうぶん","ほもん"]],
+  ["模型","もけい",["ぼけい","もがた","もかた"]],
+  ["通訳","つうやく",["つうわけ","とおやく","つうえき"]],
+  ["郵便","ゆうびん",["ゆうべん","ゆびん","ゆうひん"]],
+  ["幼児","ようじ",["ようし","おさなじ","ゆうじ"]],
+  ["翌日","よくじつ",["よくにち","よくひ","あくじつ"]],
+  ["乱暴","らんぼう",["らんばく","みだぼう","らんぽう"]],
+  ["朗読","ろうどく",["ろうとく","ほがどく","ろどく"]],
+  ["論文","ろんぶん",["ろんもん","りんぶん","ろぶん"]],
+  ["届く","とどく",["とまく","とよく","ととく"]],
+  ["預ける","あずける",["たすける","さずける","しかける"]],
+  ["拝む","おがむ",["おかむ","はいむ","おやむ"]],
+  ["忘れる","わすれる",["わかれる","わすられる","ほうれる"]],
+  ["捨てる","すてる",["たてる","あわてる","へだてる"]],
+  ["疑う","うたがう",["うたかう","うたごう","ぎがう"]],
+  ["激しい","はげしい",["げきしい","はかしい","はけしい"]]
+];
+
+/* 小5・小6 の 形の にた かんじ (KANJI_LIKE に たす)。
+   熟語の 1字を かえた ニセの ことば (規則→規測、簡単→間単) は、おなじ 音でも
+   ことばとして ないので 正解は 1つの まま */
+(function() {
+  var more = {
+    "輸":"輪", "貿":"賀", "液":"夜", "格":"略", "規":"視現", "則":"側測", "技":"枝",
+    "術":"街", "逆":"送", "経":"径軽", "検":"険験", "限":"眼", "減":"滅", "個":"固",
+    "効":"郊", "構":"講", "混":"昆", "財":"材", "資":"貸", "飼":"詞", "授":"援",
+    "招":"紹", "職":"識織", "政":"故", "製":"制", "責":"積績", "設":"投", "祖":"組",
+    "測":"側則", "適":"敵滴", "統":"続", "燃":"然", "能":"態", "破":"波", "迷":"述",
+    "謝":"射", "許":"評", "快":"決", "備":"傭",
+    "域":"城", "宇":"字", "映":"英", "沿":"治", "看":"着", "簡":"間", "貴":"責",
+    "遺":"遣", "吸":"級", "筋":"節", "警":"驚敬", "権":"観", "皇":"星", "降":"隆",
+    "裁":"栽載", "磁":"滋", "若":"苦", "縦":"従", "蒸":"承", "専":"博", "創":"倉",
+    "存":"在", "在":"存", "誕":"延", "値":"植直", "討":"計", "論":"輪", "密":"蜜",
+    "訪":"防", "訳":"駅", "幼":"幻", "翌":"習", "乱":"舌", "朗":"郎", "届":"屈",
+    "預":"頂", "拝":"持", "忘":"忙", "捨":"拾"
+  };
+  Object.keys(more).forEach(function(k) {
+    var cur = KANJI_LIKE[k] || "";
+    more[k].split("").forEach(function(c) { if (cur.indexOf(c) < 0) cur += c; });
+    KANJI_LIKE[k] = cur;
+  });
+})();
+
+/* 同じ よみの ことば。[まえ, よみ, あと, 正解, [まちがい×3]]
+   文の なかで 正解が 1つに きまる ものだけ (「体重を はかる」= 量る/測る の ように
+   どちらとも いえる ものは 入れない) */
+var KANJI_HOMO = [
+  ["アンケートに ", "かいとう", " する", "回答", ["解答","会答","回等"]],
+  ["工場の ", "きかい", " が 動く", "機械", ["機会","器会","記械"]],
+  ["発言の ", "きかい", " を あたえる", "機会", ["機械","期会","器会"]],
+  ["小学生を ", "たいしょう", " に した 本", "対象", ["対照","大将","大賞"]],
+  ["", "いがい", " な 結果に おどろく", "意外", ["以外","意害","以害"]],
+  ["関係者 ", "いがい", " 立ち入り禁止", "以外", ["意外","以害","意害"]],
+  ["", "せいかく", " に 計算する", "正確", ["性格","正格","成確"]],
+  ["明るい ", "せいかく", " の 人", "性格", ["正確","生格","正角"]],
+  ["", "かてい", " 科で 料理を 習う", "家庭", ["過程","課程","仮定"]],
+  ["薬の ", "こうか", " が あらわれる", "効果", ["校歌","高価","降下"]],
+  ["社会の 問題に ", "かんしん", " を もつ", "関心", ["感心","館心","間心"]],
+  ["よく がんばったと ", "かんしん", " する", "感心", ["関心","観心","間心"]],
+  ["先生の ", "しじ", " に したがう", "指示", ["支持","師事","指持"]],
+  ["日本の ", "きこう", " は 温暖だ", "気候", ["機構","紀行","寄港"]],
+  ["工場で 自動車を ", "せいさん", " する", "生産", ["清算","精算","正産"]],
+  ["旅行の ", "ようい", " を する", "用意", ["容易","要意","洋意"]],
+  ["校庭を ", "かいほう", " する", "開放", ["解放","快方","会放"]],
+  ["", "えいせい", " に 気を つける", "衛生", ["衛星","永世","英生"]],
+  ["人工 ", "えいせい", " を 打ち上げる", "衛星", ["衛生","永星","英星"]],
+  ["", "ほけん", " 室で 休む", "保健", ["保険","補健","保検"]],
+  ["100メートル ", "きょうそう", " で 1位に なる", "競走", ["競争","協走","強走"]],
+  ["学級委員に ", "しめい", " される", "指名", ["使命","氏名","指命"]],
+  ["明日の 天気は ", "かいせい", " です", "快晴", ["改正","開晴","快正"]],
+  ["お正月に ", "きせい", " する", "帰省", ["規制","寄生","記省"]],
+  ["人口が ", "げんしょう", " する", "減少", ["現象","原賞","減象"]],
+  ["ふしぎな 自然 ", "げんしょう", "", "現象", ["減少","原象","現賞"]]
+];
+
+/* 送りがなの 正誤。[よみ, 正しい 書き方, [まちがい×3]]
+   「送り仮名の付け方」で ゆるされている 書き方 (断わる・起る 等) は まちがいに 入れない */
+var KANJI_OKURI = [
+  ["あたらしい","新しい",["新らしい","新い","新たしい"]],
+  ["すくない","少ない",["少い","少くない","少なない"]],
+  ["みじかい","短い",["短かい","短じかい","短ない"]],
+  ["かならず","必ず",["必らず","必かず","必なず"]],
+  ["あきらか","明らか",["明か","明きらか","明かな"]],
+  ["つめたい","冷たい",["冷い","冷めたい","冷つたい"]],
+  ["うつくしい","美しい",["美くしい","美い","美つくしい"]],
+  ["くるしい","苦しい",["苦るしい","苦くしい","苦すしい"]],
+  ["たしかめる","確かめる",["確める","確しかめる","確かる"]],
+  ["おそわる","教わる",["教る","教おわる","教そわる"]],
+  ["あぶない","危ない",["危い","危あない","危ぶない"]],
+  ["あたたかい","温かい",["温たかい","温かかい","温あたかい"]],
+  ["ただしい","正しい",["正い","正だしい","正たしい"]],
+  ["なかば","半ば",["半かば","半ばか","半なかば"]],
+  ["あらためる","改める",["改る","改ためる","改らためる"]],
+  ["こころよい","快い",["快よい","快ろよい","快こよい"]],
+  ["こころざす","志す",["志ざす","志こす","志ろざす"]],
+  ["あびる","浴びる",["浴る","浴ぶる","浴あびる"]],
+  ["おさない","幼い",["幼ない","幼さない","幼なさい"]],
+  ["ついやす","費やす",["費す","費いやす","費ややす"]],
+  ["いとなむ","営む",["営なむ","営いとなむ","営とむ"]],
+  ["ひさしい","久しい",["久い","久さしい","久ひさしい"]],
+  ["さからう","逆らう",["逆う","逆からう","逆さらう"]],
+  ["かかわる","関わる",["関る","関かわる","関わわる"]]
+];
+
+/* 四字熟語。[熟語, よみ, いみ]
+   いみが にている もの (十人十色 と 千差万別 など) は どちらか 1つだけ 入れる */
+var KANJI_YOJI = [
+  ["一石二鳥","いっせきにちょう","一つの ことで 二つの 得を する"],
+  ["十人十色","じゅうにんといろ","考えや このみは 人それぞれ"],
+  ["一期一会","いちごいちえ","一生に 一度の 出会いを 大切に する"],
+  ["自業自得","じごうじとく","自分の した ことの むくいを うける"],
+  ["以心伝心","いしんでんしん","言わなくても 気持ちが 通じあう"],
+  ["起承転結","きしょうてんけつ","文章や 話の 組み立て方"],
+  ["単刀直入","たんとうちょくにゅう","前おきなしで すぐ 本題に 入る"],
+  ["異口同音","いくどうおん","みんなが 同じ ことを 言う"],
+  ["半信半疑","はんしんはんぎ","半分 信じて 半分 うたがう"],
+  ["一日千秋","いちじつせんしゅう","とても 待ちどおしい"],
+  ["大器晩成","たいきばんせい","大物は 時間を かけて 大成する"],
+  ["油断大敵","ゆだんたいてき","気を ゆるめるのは いちばんの 敵"],
+  ["有名無実","ゆうめいむじつ","名前だけで 中身が ない"],
+  ["日進月歩","にっしんげっぽ","たえず どんどん 進歩する"],
+  ["電光石火","でんこうせっか","動きが ひじょうに すばやい"],
+  ["弱肉強食","じゃくにくきょうしょく","強い ものが 弱い ものを たおして 栄える"],
+  ["前代未聞","ぜんだいみもん","今まで 聞いた ことも ない"],
+  ["絶体絶命","ぜったいぜつめい","にげられない ほど 追いつめられる"],
+  ["心機一転","しんきいってん","気持ちを すっかり 入れかえる"],
+  ["一進一退","いっしんいったい","進んだり もどったり する"],
+  ["七転八起","しちてんはっき","何度 失敗しても 立ち上がる"],
+  ["適材適所","てきざいてきしょ","その人に 合った 役目に つかせる"],
+  ["針小棒大","しんしょうぼうだい","小さな ことを 大げさに 言う"],
+  ["晴耕雨読","せいこううどく","のんびりと 自由に くらす"],
+  ["二束三文","にそくさんもん","ねだんが ひじょうに 安い"],
+  ["東奔西走","とうほんせいそう","あちこち いそがしく かけまわる"],
+  ["自画自賛","じがじさん","自分で 自分を ほめる"],
+  ["公明正大","こうめいせいだい","かくしごとが なく 正しく 堂々と している"]
+];
+
 /* ==================== ちりデータ (とどうふけん・けんちょうしょざいち・地方) ====================
    [とどうふけん, けんちょうしょざいち, 地方, とどうふけんのよみ, けんちょうしょざいちのよみ]
    なじみの ふかさで 3つの プールに わけている。 */
@@ -965,6 +1272,50 @@ var COUNTRY_HARD = [
   ["フィンランド","サンタクロースの 村が ある、北ヨーロッパの 国だよ。"]
 ];
 
+/* ==================== 世界の 首都 (ちり むずかしいモード) ====================
+   [国, 国のよみ, 首都, 首都のよみ, ひっかけ, ひっかけのよみ]
+   ひっかけ = 首都と まちがえやすい 大都市 (オーストラリア → シドニー など)。
+   首都が うつる とちゅう・2つ ある 国 (インドネシア・オランダ・スイス・南アフリカ 等) は 入れない */
+var CAP_EASY = [
+  ["アメリカ","","ワシントンD.C.","","ニューヨーク",""],
+  ["中国","ちゅうごく","北京","ペキン","上海","シャンハイ"],
+  ["韓国","かんこく","ソウル","","プサン",""],
+  ["イギリス","","ロンドン","","",""],
+  ["フランス","","パリ","","",""],
+  ["イタリア","","ローマ","","ミラノ",""],
+  ["ドイツ","","ベルリン","","ミュンヘン",""],
+  ["ロシア","","モスクワ","","",""],
+  ["エジプト","","カイロ","","",""],
+  ["タイ","","バンコク","","",""]
+];
+var CAP_MED = [
+  ["カナダ","","オタワ","","トロント",""],
+  ["オーストラリア","","キャンベラ","","シドニー",""],
+  ["ブラジル","","ブラジリア","","リオデジャネイロ",""],
+  ["インド","","ニューデリー","","ムンバイ",""],
+  ["スペイン","","マドリード","","バルセロナ",""],
+  ["メキシコ","","メキシコシティ","","",""],
+  ["フィリピン","","マニラ","","",""],
+  ["ベトナム","","ハノイ","","ホーチミン",""],
+  ["トルコ","","アンカラ","","イスタンブール",""],
+  ["ギリシャ","","アテネ","","",""]
+];
+var CAP_HARD = [
+  ["ケニア","","ナイロビ","","",""],
+  ["ニュージーランド","","ウェリントン","","オークランド",""],
+  ["サウジアラビア","","リヤド","","",""],
+  ["モンゴル","","ウランバートル","","",""],
+  ["ペルー","","リマ","","",""],
+  ["ノルウェー","","オスロ","","",""],
+  ["アルゼンチン","","ブエノスアイレス","","",""],
+  ["フィンランド","","ヘルシンキ","","",""],
+  ["ポルトガル","","リスボン","","",""],
+  ["スウェーデン","","ストックホルム","","",""],
+  ["オーストリア","","ウィーン","","",""],
+  ["ポーランド","","ワルシャワ","","",""],
+  ["チリ","","サンティアゴ","","",""]
+];
+
 /* ==================== 日本史データ ====================
    じだいは 古い じゅんに ならべる (「いちばん 古い/あたらしい じだい」の もんだいに つかう) */
 var ERAS = [
@@ -1156,6 +1507,7 @@ HIST_EVENT_EASY.concat(HIST_EVENT_MED, HIST_EVENT_HARD).forEach(function(e) {
    ちりモードの もんだい・こたえに よみがなを つける。
    ヒントの文しょうは この じしょを つかって かんじの ぶぶんだけ ルビにする。 */
 var RUBY_DICT = {
+  "首都": "しゅと",
   "万里": "ばんり", "長城": "ちょうじょう", "熱帯雨林": "ねったいうりん",
   "遊牧民": "ゆうぼくみん", "自由": "じゆう", "女神": "めがみ",
   "日本": "にほん", "時計": "とけい", "人口": "じんこう", "面積": "めんせき",
@@ -1323,6 +1675,127 @@ function jaRuby(s) { return s.replace(/\{([^|}]+)\|([^}]+)\}/g, "<ruby>$1<rt>$2<
 function jaKana(s) { return s.replace(/\{([^|}]+)\|([^}]+)\}/g, "$2"); }
 function jaText(s) { return s.replace(/\{([^|}]+)\|([^}]+)\}/g, "$1"); }
 
+/* ==================== えいご むずかしいモード ====================
+   [えいたんご, カタカナよみ, いみ, [], なかま]
+   なかま (day/subj/verb/month) が ある ことばは、まちがいも おなじ なかまから えらぶ
+   (「月曜日」の せんたくしが 曜日だけに なる) */
+var EN_X1 = [
+  ["Sunday","サンデー","{日曜日|にちようび}",[],"day"],
+  ["Monday","マンデー","{月曜日|げつようび}",[],"day"],
+  ["Tuesday","チューズデー","{火曜日|かようび}",[],"day"],
+  ["Wednesday","ウェンズデー","{水曜日|すいようび}",[],"day"],
+  ["Thursday","サーズデー","{木曜日|もくようび}",[],"day"],
+  ["Friday","フライデー","{金曜日|きんようび}",[],"day"],
+  ["Saturday","サタデー","{土曜日|どようび}",[],"day"],
+  ["math","マス","{算数|さんすう}",[],"subj"],
+  ["science","サイエンス","{理科|りか}",[],"subj"],
+  ["music","ミュージック","{音楽|おんがく}",[],"subj"],
+  ["P.E.","ピーイー","{体育|たいいく}",[],"subj"],
+  ["English","イングリッシュ","{英語|えいご}",[],"subj"],
+  ["run","ラン","{走|はし}る",[],"verb"],
+  ["swim","スイム","{泳|およ}ぐ",[],"verb"],
+  ["eat","イート","{食|た}べる",[],"verb"],
+  ["drink","ドリンク","{飲|の}む",[],"verb"],
+  ["sing","シング","{歌|うた}う",[],"verb"],
+  ["dance","ダンス","おどる",[],"verb"],
+  ["read","リード","{読|よ}む",[],"verb"],
+  ["write","ライト","{書|か}く",[],"verb"],
+  ["sleep","スリープ","ねる",[],"verb"]
+];
+var EN_X2 = [
+  ["January","ジャニュアリー","{1月|いちがつ}",[],"month"],
+  ["February","フェブルアリー","{2月|にがつ}",[],"month"],
+  ["March","マーチ","{3月|さんがつ}",[],"month"],
+  ["April","エイプリル","{4月|しがつ}",[],"month"],
+  ["May","メイ","{5月|ごがつ}",[],"month"],
+  ["June","ジューン","{6月|ろくがつ}",[],"month"],
+  ["July","ジュライ","{7月|しちがつ}",[],"month"],
+  ["August","オーガスト","{8月|はちがつ}",[],"month"],
+  ["September","セプテンバー","{9月|くがつ}",[],"month"],
+  ["October","オクトーバー","{10月|じゅうがつ}",[],"month"],
+  ["November","ノーベンバー","{11月|じゅういちがつ}",[],"month"],
+  ["December","ディセンバー","{12月|じゅうにがつ}",[],"month"],
+  ["cook","クック","{料理|りょうり}する",[],"verb"],
+  ["walk","ウォーク","{歩|ある}く",[],"verb"],
+  ["jump","ジャンプ","とぶ",[],"verb"],
+  ["speak","スピーク","{話|はな}す",[],"verb"],
+  ["study","スタディ","{勉強|べんきょう}する",[],"verb"],
+  ["listen","リッスン","{聞|き}く",[],"verb"],
+  ["watch","ウォッチ","{見|み}る",[],"verb"],
+  ["make","メイク","{作|つく}る",[],"verb"]
+];
+
+/* ただしい つづり。[えいたんご, [まちがい×3]]
+   まちがいが べつの 英単語に なって しまう もの (weather→whether 等) は つかわない */
+var EN_SPELL = [
+  ["beautiful",["beutiful","beautifull","beautyful"]],
+  ["delicious",["delicous","delicius","delisious"]],
+  ["vegetable",["vegtable","vegetabel","vejetable"]],
+  ["breakfast",["brekfast","breakfirst","breakfest"]],
+  ["library",["libraly","librery","liblary"]],
+  ["hospital",["hospitel","hosptal","hospitall"]],
+  ["important",["inportant","importent","impotant"]],
+  ["favorite",["favorit","faverite","favoritte"]],
+  ["question",["qestion","questoin","quesion"]],
+  ["weather",["weater","waether","weathre"]],
+  ["language",["langage","languege","lunguage"]],
+  ["season",["seeson","sesaon","seasan"]],
+  ["kitchen",["kichen","kitchin","kittchen"]],
+  ["mountain",["mountin","mountian","montain"]],
+  ["teacher",["teatcher","teachar","ticher"]],
+  ["friend",["freind","frend","friand"]],
+  ["family",["famiry","familly","femily"]],
+  ["morning",["morming","mornig","moorning"]],
+  ["Wednesday",["Wensday","Wednsday","Wedensday"]],
+  ["Thursday",["Tursday","Thrusday","Thursdey"]],
+  ["Saturday",["Saterday","Saturdey","Satarday"]],
+  ["Tuesday",["Tuseday","Teusday","Tuesdey"]],
+  ["January",["Janualy","Jenuary","Januery"]],
+  ["February",["Febrary","Feburary","Februaly"]],
+  ["September",["Septenber","Setpember","Septembar"]],
+  ["science",["sience","scince","sciense"]],
+  ["music",["musik","myusic","musick"]],
+  ["swim",["swimm","suim","swiim"]],
+  ["write",["wrait","wirte","wrigt"]],
+  ["dance",["dence","dans","dancce"]]
+];
+
+/* 文の あなうめ。[えい文 (___ が あな), 正解, [まちがい×3], 日本語の いみ]
+   日本語の いみで 正解が 1つに きまるように する
+   (The cat is ___ the box. は on も 英語として なりたつので「箱の 中に」で きめる) */
+var EN_FILL = [
+  ["I ___ a student.","am",["is","are","be"],"わたしは {生徒|せいと}です。"],
+  ["She ___ my sister.","is",["am","are","be"],"かのじょは わたしの {姉|あね}です。"],
+  ["We ___ friends.","are",["am","is","be"],"わたしたちは {友|とも}だちです。"],
+  ["He ___ a teacher.","is",["am","are","be"],"かれは {先生|せんせい}です。"],
+  ["I ___ soccer every day.","play",["plays","playing","to play"],"わたしは {毎日|まいにち} サッカーを します。"],
+  ["He ___ tennis.","plays",["play","playing","to play"],"かれは テニスを します。"],
+  ["___ you like apples?","Do",["Does","Are","Is"],"あなたは りんごが すきですか。"],
+  ["___ she like dogs?","Does",["Do","Is","Are"],"かのじょは {犬|いぬ}が すきですか。"],
+  ["I ___ swim fast.","can",["am","is","are"],"わたしは {速|はや}く {泳|およ}げます。"],
+  ["I want ___ go to Kyoto.","to",["for","in","at"],"わたしは {京都|きょうと}へ {行|い}きたいです。"],
+  ["The cat is ___ the box.","in",["on","under","at"],"ねこは {箱|はこ}の {中|なか}に います。"],
+  ["I get up ___ six.","at",["in","on","of"],"わたしは 6{時|じ}に {起|お}きます。"],
+  ["My birthday is ___ May.","in",["at","on","of"],"わたしの {誕生日|たんじょうび}は 5{月|がつ}です。"],
+  ["I have two ___.","dogs",["dog","doges","a dog"],"わたしは {犬|いぬ}を 2ひき かっています。"],
+  ["I ___ to the park yesterday.","went",["go","goes","going"],"わたしは きのう {公園|こうえん}に {行|い}きました。"],
+  ["I ___ curry last night.","ate",["eat","eats","eating"],"わたしは きのうの {夜|よる} カレーを {食|た}べました。"],
+  ["What ___ is it?","time",["color","sport","food"],"{今|いま} {何時|なんじ}ですか。"],
+  ["___ is your bag?","Where",["What","Who","When"],"あなたの かばんは どこですか。"],
+  ["___ are you?","How",["What","Who","Where"],"ごきげん いかがですか。"],
+  ["This is ___ apple.","an",["a","two","many"],"これは りんごです。"],
+  ["I ___ like carrots.","don't",["doesn't","am not","isn't"],"わたしは にんじんが すきでは ありません。"],
+  ["Let's ___ soccer.","play",["plays","playing","played"],"サッカーを しましょう。"],
+  ["___ is your birthday?","When",["Where","Who","How"],"あなたの {誕生日|たんじょうび}は いつですか。"],
+  ["I ___ a cat.","have",["has","am","having"],"わたしは ねこを かっています。"]
+];
+
+/* つづりの もんだいで いみを 出すための ひきあて (えいたんご → データ) */
+var EN_BY_WORD = {};
+[EN_EASY, EN_MED, EN_HARD, EN_X1, EN_X2].forEach(function(a) {
+  a.forEach(function(e) { EN_BY_WORD[e[0]] = e; });
+});
+
 /* ==================== モンスター ====================
    レベルごとに 1体ずつ (がぞうは monster01.png 〜 monster15.png) */
 var MONSTERS = [
@@ -1412,7 +1885,25 @@ var histEventDeck = [];
 var histEventPool = [];
 var histEventDeckTier = -1;
 var eraRangeDeck = [];
+var homoDeck = [];
+var okuriDeck = [];
+var yojiDeck = [];
+var spellDeck = [];
+var fillDeck = [];
+var capDeck = [];
+var capPool = [];
+var capDeckTier = -1;
 var busy = false;
+
+/* むずかしいモードが ある モード と、えらぶ がめんの せつめい */
+var HARD_MODES = {
+  kanji: { title: "📖 かんじモード",
+           hardDesc: "小5・小6の かんじ、四字熟語、<br>送りがな、同じ よみの ことば" },
+  geo:   { title: "🗾 ちりモード",
+           hardDesc: "47都道府県 ぜんぶ、世界の 首都、<br>日本の 2ばんめ・3ばんめ" },
+  en:    { title: "🔤 えいごモード",
+           hardDesc: "つづり、文の あなうめ、曜日・月・教科・うごき<br>(カタカナの よみは こたえてから)" }
+};
 
 /* レベル15の モンスターを たおしたら ゲームクリア */
 var CLEAR_LEVEL = 15;
@@ -1443,31 +1934,71 @@ function shuffle(arr) {
 }
 function rand(n) { return Math.floor(Math.random() * n); }
 
-function getBest(mode) {
-  try { return parseInt(localStorage.getItem(MODES[mode].storageKey) || "0", 10) || 0; }
+/* ハイスコアは モード × むずかしさ ごとに わける。
+   かんたん は いままでの キーの まま (これまでの きろくが そのまま のこる) */
+function bestKey(mode, hard) {
+  return MODES[mode].storageKey + (hard ? "_hard" : "");
+}
+function getBest(mode, hard) {
+  try { return parseInt(localStorage.getItem(bestKey(mode, hard)) || "0", 10) || 0; }
   catch (e) { return 0; }
 }
-function setBest(mode, v) {
-  try { localStorage.setItem(MODES[mode].storageKey, String(v)); } catch (e) {}
+function setBest(mode, hard, v) {
+  try { localStorage.setItem(bestKey(mode, hard), String(v)); } catch (e) {}
 }
 
 /* ==================== がめん ==================== */
+/* タイトルの ボタンに 出す きろく (「さいこう」の あとに つづく ぶぶん) */
+function bestBody(mode) {
+  var e = getBest(mode, false);
+  if (!HARD_MODES[mode]) return e ? e + " てん" : "";
+  var h = getBest(mode, true);
+  var parts = [];
+  if (e) parts.push("かんたん " + e);
+  if (h) parts.push("むずかしい " + h);
+  return parts.join(" / ");
+}
+
+/* 「さいこうとくてん …」と 出す。1行に 入らない ときは「さいこう …」に みじかくする。
+   はばを はかるので、がめんが 見えている ときに よぶ */
+function setBestLabel(el, body) {
+  if (!body) { el.textContent = ""; return; }
+  el.textContent = "さいこうとくてん " + body;
+  if (el.getClientRects().length > 1) el.textContent = "さいこう " + body;
+}
+
 function showTitle() {
   $("titleScreen").style.display = "flex";
+  $("diffScreen").style.display = "none";
   $("gameScreen").style.display = "none";
   $("overlay").style.display = "none";
-  var b;
-  b = getBest("mul");   $("bestMul").textContent   = b ? "さいこう " + b + " てん" : "";
-  b = getBest("div");   $("bestDiv").textContent   = b ? "さいこう " + b + " てん" : "";
-  b = getBest("kanji"); $("bestKanji").textContent = b ? "さいこう " + b + " てん" : "";
-  b = getBest("geo");   $("bestGeo").textContent   = b ? "さいこう " + b + " てん" : "";
-  b = getBest("en");    $("bestEn").textContent    = b ? "さいこう " + b + " てん" : "";
-  b = getBest("hist");  $("bestHist").textContent  = b ? "さいこう " + b + " てん" : "";
+  setBestLabel($("bestMul"),   bestBody("mul"));
+  setBestLabel($("bestDiv"),   bestBody("div"));
+  setBestLabel($("bestKanji"), bestBody("kanji"));
+  setBestLabel($("bestGeo"),   bestBody("geo"));
+  setBestLabel($("bestEn"),    bestBody("en"));
+  setBestLabel($("bestHist"),  bestBody("hist"));
   // スコアが なにも ないときは リセットボタンを かくす
   disarmResetBtn();
   var anyBest = false;
-  for (var k in MODES) { if (getBest(k)) anyBest = true; }
+  for (var k in MODES) { if (getBest(k, false) || getBest(k, true)) anyBest = true; }
   $("btnResetScore").style.display = anyBest ? "block" : "none";
+}
+
+/* かんじ・ちり・えいご は「かんたん / むずかしい」を えらぶ がめんを はさむ */
+var diffMode = "";
+function showDiffSelect(mode) {
+  ensureAudio();
+  SFX.tap();
+  diffMode = mode;
+  var hm = HARD_MODES[mode];
+  $("diffTitle").textContent = hm.title;
+  $("hardDesc").innerHTML = hm.hardDesc;
+  $("titleScreen").style.display = "none";
+  $("diffScreen").style.display = "flex";
+  var e = getBest(mode, false), h = getBest(mode, true);
+  setBestLabel($("bestEasy"), e ? e + " てん" : "");
+  setBestLabel($("bestHard"), h ? h + " てん" : "");
 }
 
 /* スコアリセット (まちがえて おさないように 2かい おして かくてい) */
@@ -1489,16 +2020,20 @@ function onResetScore() {
     return;
   }
   try {
-    for (var k in MODES) localStorage.removeItem(MODES[k].storageKey);
+    for (var k in MODES) {
+      localStorage.removeItem(bestKey(k, false));
+      localStorage.removeItem(bestKey(k, true));
+    }
   } catch (e) {}
   showTitle();
 }
 
-function startGame(mode) {
+function startGame(mode, hard) {
   ensureAudio();
   SFX.tap();
   state = {
     mode: mode,
+    hard: !!hard,
     ended: false,
     score: 0,
     combo: 0,
@@ -1528,7 +2063,16 @@ function startGame(mode) {
   histEventDeck = [];
   histEventDeckTier = -1;
   eraRangeDeck = [];
+  homoDeck = [];
+  okuriDeck = [];
+  yojiDeck = [];
+  spellDeck = [];
+  fillDeck = [];
+  capDeck = [];
+  capDeckTier = -1;
+  $("hardBadge").style.display = state.hard ? "block" : "none";
   $("titleScreen").style.display = "none";
+  $("diffScreen").style.display = "none";
   $("gameScreen").style.display = "flex";
   $("overlay").style.display = "none";
   updateHud();
@@ -1609,7 +2153,7 @@ function makeQuestion() {
   if (state.mode === "geo") return makeGeoQuestion();
   if (state.mode === "en") return makeEnglishQuestion();
   if (state.mode === "hist") return makeHistoryQuestion();
-  return makeKanjiQuestion();
+  return state.hard ? makeKanjiHardQuestion() : makeKanjiQuestion();
 }
 
 function makeMulQuestion() {
@@ -1731,11 +2275,18 @@ function collectWrongNumbers(ans, candidates) {
 
 function makeKanjiQuestion() {
   // レベルが あがると 小2 → 小3 → 小4+とくべつな よみ に かわる
+  // (むずかしいモードは 小5 → 小6 → 小5+小6)
   var d = kanjiTier();
   if (kanjiDeck.length === 0 || kanjiDeckTier !== d) {
-    kanjiPool = d === 2 ? KANJI_G4.concat(KANJI_SPECIAL) :
-                d === 1 ? KANJI_G3.slice() :
-                          KANJI_G2.slice();
+    if (state.hard) {
+      kanjiPool = d === 2 ? KANJI_G5.concat(KANJI_G6) :
+                  d === 1 ? KANJI_G6.slice() :
+                            KANJI_G5.slice();
+    } else {
+      kanjiPool = d === 2 ? KANJI_G4.concat(KANJI_SPECIAL) :
+                  d === 1 ? KANJI_G3.slice() :
+                            KANJI_G2.slice();
+    }
     kanjiDeck = shuffle(kanjiPool.slice());
     kanjiDeckTier = d;
   }
@@ -1761,6 +2312,9 @@ function okurigana(word) {
   return m ? m[0] : "";
 }
 
+/* 字を かえても べつの 書き方として とおって しまう ことば (蒸汽 = 蒸気 の 古い 書き方) */
+var LOOKALIKE_NG = { "蒸汽": true };
+
 /* 1字だけ 形の にた 字に かえた ことば (公園 → 分園・公遠) を ぜんぶ あつめる */
 function lookalikeWords(word) {
   var out = [];
@@ -1769,7 +2323,7 @@ function lookalikeWords(word) {
     if (!like) continue;
     for (var j = 0; j < like.length; j++) {
       var w = word.slice(0, i) + like.charAt(j) + word.slice(i + 1);
-      if (out.indexOf(w) < 0) out.push(w);
+      if (!LOOKALIKE_NG[w] && out.indexOf(w) < 0) out.push(w);
     }
   }
   return out;
@@ -1805,11 +2359,77 @@ function makeReadingToKanjiQuestion(item) {
   };
 }
 
+/* かんじ むずかしいモード: よみ・書き (小5・小6) を 4わり、
+   同じ よみの ことば・送りがな・四字熟語 を 2わりずつ */
+function makeKanjiHardQuestion() {
+  var roll = rand(100);
+  if (roll < 20) return makeHomoQuestion();
+  if (roll < 40) return makeOkuriQuestion();
+  if (roll < 60) return makeYojiQuestion();
+  return makeKanjiQuestion();
+}
+
+function makeHomoQuestion() {
+  if (homoDeck.length === 0) homoDeck = shuffle(KANJI_HOMO.slice());
+  var h = homoDeck.pop();
+  return {
+    label: "せんの ところに あう かんじは?",
+    main: h[0] + '<span class="blank">' + h[1] + '</span>' + h[2],
+    mainHtml: true,
+    sentence: true,
+    answer: h[3],
+    choices: shuffle([h[3]].concat(h[4]))
+  };
+}
+
+function makeOkuriQuestion() {
+  if (okuriDeck.length === 0) okuriDeck = shuffle(KANJI_OKURI.slice());
+  var o = okuriDeck.pop();
+  return {
+    label: "おくりがなが ただしいのは?",
+    main: o[0],
+    big: o[0].length <= 5,
+    answer: o[1],
+    choices: shuffle([o[1]].concat(o[2]))
+  };
+}
+
+/* 四字熟語: 熟語→いみ と いみ→熟語 を 半分ずつ。まちがいは ほかの 熟語の いみ */
+function makeYojiQuestion() {
+  if (yojiDeck.length === 0) yojiDeck = shuffle(KANJI_YOJI.slice());
+  var y = yojiDeck.pop();
+  var others = shuffle(KANJI_YOJI.filter(function(e) { return e !== y; })).slice(0, 3);
+  var opts = shuffle([y].concat(others));
+  if (rand(2) === 0) {
+    return {
+      label: "この よじじゅくごの いみは?",
+      main: rubyHtml(y[0], y[1]),
+      mainHtml: true,
+      big: true,
+      oneCol: true,
+      smallText: true,
+      answer: y[2],
+      choices: opts.map(function(e) { return e[2]; })
+    };
+  }
+  return {
+    label: "この いみの よじじゅくごは?",
+    main: y[2],
+    sentence: true,
+    answer: y[0],
+    answerLabel: y[0] + " (" + y[1] + ")",
+    choices: opts.map(function(e) { return e[0]; }),
+    choicesHtml: opts.map(function(e) { return rubyHtml(e[0], e[1]); })
+  };
+}
+
 function ensureGeoPool() {
   // レベルが あがると なじみの あるものだけ → ぜんこくの とどうふけんに かわる
-  var d = difficulty();
+  // (むずかしいモードは さいしょから 47都道府県 ぜんぶ。tier 3 として あつかう)
+  var d = state.hard ? 3 : difficulty();
   if (geoDeck.length === 0 || geoDeckTier !== d) {
-    geoPool = d === 2 ? GEO_MED.concat(GEO_HARD) :
+    geoPool = d === 3 ? GEO_EASY.concat(GEO_MED, GEO_HARD) :
+              d === 2 ? GEO_MED.concat(GEO_HARD) :
               d === 1 ? GEO_MED.slice() :
                         GEO_EASY.slice();
     geoDeck = shuffle(geoPool.slice());
@@ -1821,6 +2441,16 @@ function makeGeoQuestion() {
   ensureGeoPool();
   // とどうふけん・けんちょうしょざいちを メインに、地方/地図記号/せかいの国/日本一/名産も まぜて だす
   var roll = rand(100);
+  if (state.hard) {
+    // むずかしいモードは 世界の首都を くわえる
+    if (roll < 10) return makeRegionQuestion();
+    if (roll < 20) return makeSymbolQuestion();
+    if (roll < 30) return makeCountryQuestion();
+    if (roll < 50) return makeWorldCapitalQuestion();
+    if (roll < 65) return makeGeoRankQuestion();
+    if (roll < 75) return makeProduceQuestion();
+    return makeGeoPrefQuestion();
+  }
   if (roll < 15) return makeRegionQuestion();
   if (roll < 30) return makeSymbolQuestion();
   if (roll < 45) return makeCountryQuestion();
@@ -1861,7 +2491,8 @@ function buildRankDeck(d) {
 }
 
 function makeGeoRankQuestion() {
-  var d = difficulty();
+  // むずかしいモードは レベル1から「2ばんめ・3ばんめ」と 日本三大を 出す
+  var d = state.hard ? 2 : difficulty();
   if (rankDeck.length === 0 || rankDeckTier !== d) {
     rankDeck = buildRankDeck(d);
     rankDeckTier = d;
@@ -2021,6 +2652,49 @@ function makeCountryQuestion() {
   };
 }
 
+/* 世界の 首都 (むずかしいモード)。国→首都 と 首都→国 を 半分ずつ。
+   国→首都 では ひっかけの 大都市 (シドニー など) が あれば 1つ まぜる */
+function makeWorldCapitalQuestion() {
+  var d = difficulty();
+  if (capDeck.length === 0 || capDeckTier !== d) {
+    capPool = d === 2 ? CAP_EASY.concat(CAP_MED, CAP_HARD) :
+              d === 1 ? CAP_EASY.concat(CAP_MED) :
+                        CAP_EASY.slice();
+    capDeck = shuffle(capPool.slice());
+    capDeckTier = d;
+  }
+  var it = capDeck.pop();
+  var others = shuffle(capPool.filter(function(e) { return e !== it; })).slice(0, 3);
+  if (rand(2) === 0) {
+    var opts = [[it[2], it[3]]].concat(others.map(function(e) { return [e[2], e[3]]; }));
+    if (it[4]) opts[3] = [it[4], it[5]];
+    opts = shuffle(opts);
+    return {
+      label: "世界の 首都 クイズ!",
+      main: rubyHtml(it[0], it[1]) + rubyText("の 首都は?"),
+      mainHtml: true,
+      sentence: true,
+      oneCol: true,
+      answer: it[2],
+      answerLabel: it[3] ? it[2] + " (" + it[3] + ")" : it[2],
+      choices: opts.map(function(o) { return o[0]; }),
+      choicesHtml: opts.map(function(o) { return rubyHtml(o[0], o[1]); })
+    };
+  }
+  var copts = shuffle([it].concat(others));
+  return {
+    label: "世界の 首都 クイズ!",
+    main: rubyText("首都が ") + rubyHtml(it[2], it[3]) + rubyText(" の 国は?"),
+    mainHtml: true,
+    sentence: true,
+    oneCol: true,
+    answer: it[0],
+    answerLabel: it[1] ? it[0] + " (" + it[1] + ")" : it[0],
+    choices: copts.map(function(e) { return e[0]; }),
+    choicesHtml: copts.map(function(e) { return rubyHtml(e[0], e[1]); })
+  };
+}
+
 function makePrefToCapitalQuestion(item) {
   // field 1 = けんちょうしょざいち、よみは そのつぎ (index 4)
   return makeGeoPairQuestion(item, 1, "けんちょうしょざいちは どこ?");
@@ -2089,11 +2763,23 @@ function enMeaningHtml(ja, word, kana) {
 }
 
 function makeEnglishQuestion() {
+  // むずかしいモードは つづり・あなうめを 4わり まぜる
+  if (state.hard) {
+    var roll = rand(100);
+    if (roll < 20) return makeSpellQuestion();
+    if (roll < 40) return makeFillQuestion();
+  }
   var d = difficulty();
   if (enDeck.length === 0 || enDeckTier !== d) {
-    enPool = d === 2 ? EN_MED.concat(EN_HARD) :
-             d === 1 ? EN_MED.slice() :
-                       EN_EASY.slice();
+    if (state.hard) {
+      enPool = d === 2 ? EN_MED.concat(EN_HARD, EN_X1, EN_X2) :
+               d === 1 ? EN_HARD.concat(EN_X2) :
+                         EN_MED.concat(EN_X1);
+    } else {
+      enPool = d === 2 ? EN_MED.concat(EN_HARD) :
+               d === 1 ? EN_MED.slice() :
+                         EN_EASY.slice();
+    }
     enDeck = shuffle(enPool.slice());
     enDeckTier = d;
   }
@@ -2103,14 +2789,24 @@ function makeEnglishQuestion() {
   return makeEnToMeaningQuestion(item);
 }
 
+/* まちがいの 3語。なかま (曜日・月 など) が ある ことばは おなじ なかまから えらぶ */
+function pickEnOthers(item) {
+  var others = enPool.filter(function(e) {
+    return e[0] !== item[0] && e[2] !== item[2];
+  });
+  if (item[4]) {
+    var same = others.filter(function(e) { return e[4] === item[4]; });
+    if (same.length >= 3) others = same;
+  }
+  return shuffle(others).slice(0, 3);
+}
+
 function makeEnToMeaningQuestion(item) {
   // item = [えいご, カタカナ, いみ, [まちがい1,2,3]]
   // もんだいちゅうは いみ(日本語)だけを みせ、こたえた あとに 全せんたくしへ
   // えいご+カタカナよみを だす (先に みえると こたえが わかってしまうため)。
   // そのため まちがいも えいご・よみを もつ プールの ほかの語から えらぶ。
-  var others = shuffle(enPool.filter(function(e) {
-    return e[0] !== item[0] && e[2] !== item[2];
-  })).slice(0, 3);
+  var others = pickEnOthers(item);
   var opts = [item].concat(others).map(function(e) {
     return { val: e[2], html: enMeaningHtml(e[2], e[0], e[1]) };
   });
@@ -2132,9 +2828,8 @@ function makeEnToMeaningQuestion(item) {
 
 function makeMeaningToEnQuestion(item) {
   // いみ(日本語)を みせて えいごを えらばせる。せんたくしには カタカナよみを つける。
-  var others = shuffle(enPool.filter(function(e) {
-    return e[0] !== item[0] && e[2] !== item[2];
-  })).slice(0, 3);
+  // むずかしいモードでは カタカナよみは こたえてから 出す (音で あてられないように)
+  var others = pickEnOthers(item);
   var opts = [item].concat(others).map(function(e) {
     return { val: e[0], html: enWordHtml(e[0], e[1]) };
   });
@@ -2147,7 +2842,40 @@ function makeMeaningToEnQuestion(item) {
     answer: item[0],
     answerLabel: item[0] + " (" + item[1] + ")",
     choices: opts.map(function(o) { return o.val; }),
-    choicesHtml: opts.map(function(o) { return o.html; })
+    choicesHtml: opts.map(function(o) { return o.html; }),
+    hideReadingUntilAnswer: !!state.hard
+  };
+}
+
+/* ただしい つづりを えらぶ (むずかしいモード)。いみだけを 見せる */
+function makeSpellQuestion() {
+  if (spellDeck.length === 0) spellDeck = shuffle(EN_SPELL.slice());
+  var s = spellDeck.pop();
+  var e = EN_BY_WORD[s[0]];
+  var opts = shuffle([s[0]].concat(s[1]));
+  return {
+    label: "ただしい つづりは どれ?",
+    main: jaRuby(e[2]),
+    mainHtml: true,
+    answer: s[0],
+    answerLabel: s[0] + " (" + e[1] + ")",
+    choices: opts,
+    choicesHtml: opts.map(function(w) { return '<span class="enSpell">' + w + '</span>'; })
+  };
+}
+
+/* 文の あなうめ (むずかしいモード)。日本語の いみを そえて 正解を 1つに きめる */
+function makeFillQuestion() {
+  if (fillDeck.length === 0) fillDeck = shuffle(EN_FILL.slice());
+  var f = fillDeck.pop();
+  return {
+    label: "___ に はいる ことばは?",
+    main: '<div class="fillEn">' + f[0].replace("___", '<span class="blank">&#12288;&#12288;</span>') +
+          '</div><div class="fillJa">' + jaRuby(f[3]) + '</div>',
+    mainHtml: true,
+    answer: f[1],
+    answerLabel: f[1] + " (" + f[0].replace("___", f[1]) + ")",
+    choices: shuffle([f[1]].concat(f[2]))
   };
 }
 
@@ -2266,7 +2994,9 @@ function nextQuestion() {
   qm.classList.toggle("symbolQ", !!currentQ.symbol);
   qm.classList.toggle("enQ", !!currentQ.enQ);
   qm.classList.toggle("rubyBlock", !!currentQ.rubyBlock);
+  qm.classList.toggle("sentenceQ", !!currentQ.sentence);
   $("choices").classList.toggle("oneCol", !!currentQ.oneCol);
+  $("choices").classList.toggle("smallText", !!currentQ.smallText);
   if (currentQ.symbol || currentQ.mainHtml) {
     qm.innerHTML = currentQ.main;
   } else {
@@ -2446,9 +3176,9 @@ function showResult(kind) {
   $("finalKills").textContent = state.kills;
   $("finalCombo").textContent = state.maxCombo;
 
-  var best = getBest(state.mode);
+  var best = getBest(state.mode, state.hard);
   var isNew = state.score > best;
-  if (isNew) setBest(state.mode, state.score);
+  if (isNew) setBest(state.mode, state.hard, state.score);
   $("newRecord").style.display = isNew && state.score > 0 ? "block" : "none";
 
   $("overlay").style.display = "flex";
@@ -2457,16 +3187,19 @@ function showResult(kind) {
 /* ==================== イベント ==================== */
 $("btnMul").addEventListener("click", function() { startGame("mul"); });
 $("btnDiv").addEventListener("click", function() { startGame("div"); });
-$("btnKanji").addEventListener("click", function() { startGame("kanji"); });
-$("btnGeo").addEventListener("click", function() { startGame("geo"); });
-$("btnEn").addEventListener("click", function() { startGame("en"); });
+$("btnKanji").addEventListener("click", function() { showDiffSelect("kanji"); });
+$("btnGeo").addEventListener("click", function() { showDiffSelect("geo"); });
+$("btnEn").addEventListener("click", function() { showDiffSelect("en"); });
 $("btnHist").addEventListener("click", function() { startGame("hist"); });
+$("btnEasy").addEventListener("click", function() { startGame(diffMode, false); });
+$("btnHard").addEventListener("click", function() { startGame(diffMode, true); });
+$("btnDiffBack").addEventListener("click", function() { ensureAudio(); SFX.tap(); showTitle(); });
 choiceBtns.forEach(function(btn, i) {
   btn.addEventListener("click", function() { answer(i); });
 });
 $("btnQuit").addEventListener("click", function() { quitGame(); });
 $("btnResetScore").addEventListener("click", onResetScore);
-$("btnRetry").addEventListener("click", function() { startGame(state.mode); });
+$("btnRetry").addEventListener("click", function() { startGame(state.mode, state.hard); });
 $("btnToTitle").addEventListener("click", function() { ensureAudio(); SFX.tap(); showTitle(); });
 
 showTitle();
